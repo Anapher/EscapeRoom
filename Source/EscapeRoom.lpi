@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="2">
+    <Units Count="6">
       <Unit0>
         <Filename Value="EscapeRoom.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -42,9 +42,30 @@
         <Filename Value="mainform.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainForm"/>
       </Unit1>
+      <Unit2>
+        <Filename Value="gameengine.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="GameEngine"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="leveldesign.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="LevelDesign"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="levelutils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="LevelUtils"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="objectives.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Objectives"/>
+      </Unit5>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -55,6 +76,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
+      <OtherUnitFiles Value="..\libraries\bgrabitmap9.1"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
