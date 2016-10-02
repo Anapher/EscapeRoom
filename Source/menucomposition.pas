@@ -59,9 +59,15 @@ procedure TMenuComposition.Render(bitmap : TBGRABitmap; deltaTime : Int64);
 var i : integer;
 begin
     bitmap.FontAntialias := true;
+
     CalculateButtonPositions(bitmap.Width, bitmap.Height);
     for i := 0 to Length(_buttons) - 1 do
         DrawButton(_buttons[i], bitmap);
+
+    if(deltaTime < 1000) then
+       bitmap.Rectangle(0, 0, bitmap.Width, bitmap.Height, BGRA(0, 0, 0,
+       round(255 - (deltaTime / 1000 * 255))), BGRA(0, 0, 0,
+       round(255 - (deltaTime / 1000 * 255))), dmDrawWithTransparency);
 end;
 
 procedure TMenuComposition.CalculateButtonPositions(width, height : integer);

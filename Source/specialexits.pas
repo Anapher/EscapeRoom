@@ -8,81 +8,79 @@ uses
   Classes, SysUtils, LevelDesign;
 
 type
-  TPortalExit = class(ISpecialExit)
-    private
-      _exitPosition : Direction;
-      _targetRoom : TPoint;
+  TSpecialExitBase = class abstract(ISpecialExit)
+    protected
+       _exitPosition : Direction;
+       _isPassed : boolean;
     public
-      constructor Create(exitPosition : Direction; targetX, targetY : integer); overload;
-      function GetExitPosition() : Direction;
-      function GetTargetRoom() : TPoint;
+       constructor Create(exitPosition : Direction); overload;
+       function GetExitPosition() : Direction; virtual;
+       procedure SetExitPassed(); virtual;
+       function GetExitPassed() : boolean; virtual;
   end;
 
 type
-  TLockedExit = class(ISpecialExit)
+  TPortalExit = class(TSpecialExitBase)
     private
-      _exitPosition : Direction;
+      _targetRoom : TPoint;
+    public
+      constructor Create(exitPosition : Direction; targetRoom : TPoint); overload;
+      property TargetRoomLocation: TPoint read _targetRoom;
+  end;
+
+type
+  TLockedExit = class(TSpecialExitBase)
+    private
       _objectiveId : string;
     public
       constructor Create(exitPosition : Direction; objectiveId : string); overload;
-      function GetExitPosition() : Direction;
-      function GetObjectiveId() : string;
+      property ObjectiveId: string read _objectiveId;
   end;
 
 type
-  TLockPickExit = class(ISpecialExit)
-    private
-      _exitPosition : Direction;
-    public
-      constructor Create(exitPosition : Direction); overload;
-      function GetExitPosition() : Direction;
+  TLockPickExit = class(TSpecialExitBase)
+  end;
+
+type
+  TLevelCompletedExit = class(TSpecialExitBase)
   end;
 
 implementation
 
+//SpecialExitBase
+constructor TSpecialExitBase.Create(exitPosition : Direction);
+begin
+    _exitPosition := exitPosition;
+end;
+
+function TSpecialExitBase.GetExitPosition() : Direction;
+begin
+   exit(_exitPosition);
+end;
+
+procedure TSpecialExitBase.SetExitPassed();
+begin
+   _isPassed := true;
+end;
+
+function TSpecialExitBase.GetExitPassed() : boolean;
+begin
+   exit(_isPassed);
+end;
+
 //Portal
 constructor TPortalExit.Create(exitPosition : Direction; targetRoom : TPoint);
 begin
-    _exitPosition := exitPosition;
+    inherited Create(exitPosition);
+
     _targetRoom := targetRoom;
 end;
 
-function TPortalExit.GetExitPosition() : Direction;
-begin
-    result := _exitPosition;
-end;
-
-function TPortalExit.GetTargetRoom() : TPoint;
-begin
-    result := _targetRoom;
-end;
-
-//Lock
+//Locked
 constructor TLockedExit.Create(exitPosition : Direction; objectiveId : string);
 begin
-    _exitPosition := exitPosition;
+    inherited Create(exitPosition);
     _objectiveId := objectiveId;
-end;
-
-function TLockedExit.GetExitPosition() : Direction;
-begin
-    result := _exitPosition;
-end;
-
-function TLockedExit.GetObjectiveId() : string;
-begin
-   result := _objectiveId;
-end;
-
-//LockPickExit
-constructor TLockPickExit.Create(exitPosition : Direction; objectiveId : string); overload;
-begin
-   _exitPosition := exitPosition;
-end;
-
-function TLockPickExit.GetExitPosition() : Direction;
-begin
-   result := _exitPosition;
 end;
 
 end.

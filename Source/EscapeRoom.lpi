@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="13">
+    <Units Count="14">
       <Unit0>
         <Filename Value="EscapeRoom.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -101,6 +101,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="DrawableUiElements"/>
       </Unit12>
+      <Unit13>
+        <Filename Value="tutoriallevel.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TutorialLevel"/>
+      </Unit13>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

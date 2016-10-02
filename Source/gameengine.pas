@@ -117,8 +117,10 @@ begin
     _currentComposition.Render(_renderImage, deltaTime);
     _ownerForm.Invalidate();
 
-    if (_currentComposition.RequireSwitch <> CompositionType.None) then
+    if (_currentComposition.RequireSwitch <> CompositionType.None) then begin
        _currentComposition := GetComposition(_currentComposition.RequireSwitch);
+       _beginTime := Now;
+    end;
 end;
 
 procedure TGameEngine.KeyDown(var Key: Word; Shift: TShiftState);
