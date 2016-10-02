@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="13">
       <Unit0>
         <Filename Value="EscapeRoom.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -66,6 +66,41 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Objectives"/>
       </Unit5>
+      <Unit6>
+        <Filename Value="specialexits.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="SpecialExits"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="gamecomposition.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="GameComposition"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="menucomposition.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="MenuComposition"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="introcomposition.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="IntroComposition"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="gameeffectutils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="GameEffectUtils"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="storyboard.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Storyboard"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="drawableuielements.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DrawableUiElements"/>
+      </Unit12>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

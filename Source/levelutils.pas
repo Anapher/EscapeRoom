@@ -12,9 +12,9 @@ type
       private
         _x, _y : integer;
       public
-        constructor Create(x, y : integer); overload;
-        function GetX() : integer;
-        function GetY() : integer;
+        constructor Create(xPos, yPos : integer); overload;
+        property X: Integer read _x;
+        property Y: Integer read _y;
   end;
 
 type
@@ -22,45 +22,25 @@ type
        private
          _width, _height : integer;
        public
-         constructor Create(x, y, width, height : integer); overload;
-         function GetWidth() : integer;
-         function GetHeight() : integer;
+         constructor Create(xPos, yPos, widthVal, heightVal : integer); overload;
+         property Width: Integer read _width;
+         property Height: Integer read _height;
   end;
 
 implementation
 
-constructor TPoint.Create(x, y : integer);
+constructor TPoint.Create(xPos, yPos : integer);
 begin
-  _x := x;
-  _y := y;
+  _x := xPos;
+  _y := yPos;
 end;
 
-function TPoint.GetX() : integer;
+constructor TRectangle.Create(xPos, yPos, widthVal, heightVal : integer);
 begin
-  result := _x;
-end;
-
-function TPoint.GetY() : integer;
-begin
-  result := _y;
-end;
-
-constructor TRectangle.Create(x, y, width, height : integer);
-begin
-  _x := x;
-  _y := y;
-  _width := width;
-  _height := height;
-end;
-
-function TRectangle.GetWidth() : integer;
-begin
-  result := _width;
-end;
-
-function TRectangle.GetHeight() : integer;
-begin
-  result := _height;
+  _x := xPos;
+  _y := yPos;
+  _width := widthVal;
+  _height := heightVal;
 end;
 
 end.

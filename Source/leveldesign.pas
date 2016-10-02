@@ -1,20 +1,37 @@
 unit LevelDesign;
 
 {$mode objfpc}{$H+}
+{$interfaces corba}
 
 interface
 
 uses
-  Classes, SysUtils, LevelUtils;
+  Classes, SysUtils, LevelUtils, BGRABitmap, Controls;
 type
   {$PACKENUM 1}
   RoomType = (Normal, ContainsObjective, MonsterRoom, EscapeRoom);
 
 type
+  {$PACKENUM 1}
+  Direction = (Left, Top, Right, Bottom);
+
+type
+  {$PACKENUM 1}
+  CompositionType = (None, Intro, Menu, Game, DoorUnlocking, OffScreen);
+
+type
+  ISpecialExit = interface
+      function GetExitPosition() : Direction;
+  end;
+
+type
+  TSpecialExitArray = array of ISpecialExit;
+
+type
   IRoom = interface
      procedure EnterRoom();
      procedure EnterRoomForTheFirstTime();
-     function GetExtendedDoors();
+     function GetExtendedExits() : TSpecialExitArray;
   end;
 
 type
@@ -43,6 +60,17 @@ type
 
      function GetLevelName() : string;
      function GetDifficulty() : integer;
+  end;
+
+type
+  IComposition = interface
+     function RequireSwitch() : CompositionType;
+     function GetCompositionType() : CompositionType;
+     procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
+
+     procedure KeyDown(var Key: Word; Shift: TShiftState);
+     procedure MouseMove(Shift: TShiftState; X, Y: Integer);
+     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   end;
 
 implementation
