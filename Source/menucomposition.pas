@@ -29,6 +29,7 @@ type
        procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
        procedure DrawButton(drawableButton : TDrawableButton; bitmap : TBGRABitmap);
        procedure CalculateButtonPositions(width, height : integer);
+       procedure DoButtonAction(button : TDrawableButton);
   end;
 
 implementation
@@ -98,7 +99,6 @@ begin
          borderColor := BGRA(212, 212, 212, 212);
     end;
 
-    //im sorry for this
     if((drawableButton.Id = 2) and (drawableButton.State = ElementState.Hovered)) then
        borderColor := BGRA(194, 17, 25, 255);
 
@@ -116,18 +116,41 @@ begin
          for i := 0 to Length(_buttons) - 1 do begin
              if (_buttons[i].State = ElementState.Selected) then begin
                 //if a button is already selected
+                _buttons[i].State := ElementState.Normal; //unselect
                 if(i = Length(_buttons) - 1) then
-                     _buttons[0].State := ElementState.Selected //last element
+                     _buttons[0].State := ElementState.Selected //first element
                 else
                      _buttons[i + 1].State := ElementState.Selected;
                 exit; //we're done
              end;
          end;
+         _buttons[0].State := ElementState.Selected; //we select the first element if none was selected yet
+         exit;
+    end;
 
+    if(Key = VK_Up) then begin
+         for i := 0 to Length(_buttons) - 1 do begin
+             if (_buttons[i].State = ElementState.Selected) then begin
+                //if a button is already selected
+                _buttons[i].State := ElementState.Normal; //unselect
+                if(i = 0) then
+                     _buttons[Length(_buttons) - 1].State := ElementState.Selected //last element
+                else
+                     _buttons[i - 1].State := ElementState.Selected;
+                exit; //we're done
+             end;
+         end;
+         _buttons[Length(_buttons) - 1].State := ElementState.Selected; //we select the last element if none was selected yet
+         exit;
     end;
 
     if((Key = VK_Space) or (Key = VK_Return)) then begin
-
+         for i := 0 to Length(_buttons) - 1 do begin
+             if(_buttons[i].State = ElementState.Selected) then begin
+                DoButtonAction(_buttons[i]);
+                exit;
+             end;
+         end;
     end;
 end;
 
@@ -139,7 +162,8 @@ begin
           and (Y > _buttons[i].Y) and (Y < _buttons[i].Y + _buttons[i].Height)) then
              _buttons[i].State := ElementState.Hovered
        else
-             _buttons[i].State := ElementState.Normal;
+             if(_buttons[i].State = ElementState.Hovered) then
+                _buttons[i].State := ElementState.Normal;
    end;
 end;
 
@@ -149,15 +173,20 @@ begin
    for i := 0 to Length(_buttons) - 1 do begin
        if ((X > _buttons[i].X) and (X < _buttons[i].X + _buttons[i].Width)
           and (Y > _buttons[i].Y) and (Y < _buttons[i].Y + _buttons[i].Height)) then begin
-            Case _buttons[i].Id of
-               0: _requestedComposition := CompositionType.Game;
-               1: ;
-               2: Application.Terminate;
-            end;
+              DoButtonAction(_buttons[i]);
+              exit;
           end;
    end;
 end;
 
+procedure TMenuComposition.DoButtonAction(button : TDrawableButton);
+begin
+   Case button.Id of
+      0: _requestedComposition := CompositionType.Game;
+      1: ;
+      2: Application.Terminate;
+   end;
+end;
 
 end.
 
