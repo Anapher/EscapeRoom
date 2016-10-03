@@ -8,36 +8,30 @@ uses
   Classes, SysUtils, LevelUtils, BGRABitmap;
 
 type
-  {$PACKENUM 1}
-  ObjectiveType = (Key, Note);
-
-type
   TObjective = class
     private
       _location : TRectangle;
-      _objectiveId : string;
+      _objectiveId, _folder : string;
     public
-      constructor Create(objectiveId : string);
-      function GetLocation() : TRectangle;
+      constructor Create(objectiveIdVal : string; locationVal : TRectangle; folder : string);
+      property Location: TRectangle read _location;
+      property ObjectiveId: string read _objectiveId;
+
       function GetObjectiveImage(mouseOver : boolean) : TBGRABitmap;
-      function GetId() : string;
   end;
 
 implementation
 
-constructor TObjective.Create(objectiveId : string);
+constructor TObjective.Create(objectiveIdVal : string; locationVal : TRectangle; folder : string);
 begin
-    _objectiveId := objectiveId;
+    _objectiveId := objectiveIdVal;
+    _location := locationVal;
+    _folder := folder;
 end;
 
-function TObjective.GetLocation() : TRectangle;
+function TObjective.GetObjectiveImage(mouseOver : boolean) : TBGRABitmap;
 begin
-   result := _location;
-end;
 
-function TObjective.GetId() : string;
-begin
-   result := _objectiveId;
 end;
 
 end.

@@ -11,13 +11,14 @@ uses
 type
   TIntroComposition = class(IComposition)
     private
-       _requestedComposition : CompositionType;
+       _requestedSwitchInfo : TSwitchInfo;
        _storyboard : TStoryboard;
     public
        constructor Create(); overload;
-       function RequireSwitch() : CompositionType;
+       function RequireSwitch() : TSwitchInfo;
        function GetCompositionType() : CompositionType;
        procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
+       procedure Initialize(parameter : TObject);
 
        procedure KeyDown(var Key: Word; Shift: TShiftState);
        procedure MouseMove(Shift: TShiftState; X, Y: Integer);
@@ -28,21 +29,26 @@ implementation
 
 constructor TIntroComposition.Create();
 begin
-    _requestedComposition := CompositionType.None;
+    _requestedSwitchInfo := nil;
     _storyboard := TStoryboard.Create();
 
     _storyboard.AddAnimation(TTextFadeAnimation.Create('Escape Room', BGRA(255,255,255, 255), 1000, 500, 1000));
     _storyboard.AddAnimation(TTextFadeAnimation.Create('Erstellt von Charlotte und Vincent', BGRA(255,255,255, 255), 3500, 500, 1000));
 end;
 
-function TIntroComposition.RequireSwitch() : CompositionType;
+procedure TIntroComposition.Initialize(parameter : TObject);
 begin
-    result := _requestedComposition;
+
+end;
+
+function TIntroComposition.RequireSwitch() : TSwitchInfo;
+begin
+    exit(_requestedSwitchInfo);
 end;
 
 function TIntroComposition.GetCompositionType() : CompositionType;
 begin
-    result := CompositionType.Intro;
+    exit(CompositionType.Intro);
 end;
 
 procedure TIntroComposition.Render(bitmap : TBGRABitmap; deltaTime : Int64);
@@ -52,13 +58,13 @@ begin
     _storyboard.Render(bitmap, deltaTime);
 
     if(_storyboard.IsFinished) then
-       _requestedComposition := CompositionType.Menu;
+       _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Menu, nil);
 end;
 
 procedure TIntroComposition.KeyDown(var Key: Word; Shift: TShiftState);
 begin
    if((Key = VK_Space) or (Key = VK_Return)) then
-      _requestedComposition := CompositionType.Menu;
+      _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Menu, nil);
 end;
 
 procedure TIntroComposition.MouseMove(Shift: TShiftState; X, Y: Integer);

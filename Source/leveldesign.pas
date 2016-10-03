@@ -6,7 +6,7 @@ unit LevelDesign;
 interface
 
 uses
-  Classes, SysUtils, LevelUtils, BGRABitmap, Controls;
+  Classes, SysUtils, LevelUtils, BGRABitmap, Controls, Objectives;
 type
   {$PACKENUM 1}
   RoomType = (Normal, ContainsObjective, MonsterRoom, EscapeRoom);
@@ -44,14 +44,17 @@ type
 type
   ICustomDrawingRoom = interface(IRoom)
   ['{0b3a3d3d-af46-4afa-bc24-4f3a8610a7b8}']
-      procedure Draw(bitmap : TBGRABitmap; location : TRect);
+      function Draw() : TBGRABitmap;
   end;
+
+type
+  TObjectiveArray = array of TObjective;
 
 type
   IObjectiveRoom = interface(IRoom)
   ['{aa4bc91e-a9e1-4dea-a191-2f246900cff1}']
-      function GetObjectiveCount() : integer;
-      procedure GetObjective(index : integer);
+      function GetObjectives() : TObjectiveArray;
+      procedure ObjectiveCollected(objective : TObjective);
   end;
 
 type
@@ -69,7 +72,7 @@ type
      function GetRooms() : TRoomArray;
      function GetStartLocation() : TPoint;
      function GetSecureArea() : TPoint;
-     procedure DrawDefaultRoom(room : IRoom; bitmap : TBGRABitmap; location : TRect);
+     function DrawDefaultRoom(room : IRoom) : TBGRABitmap;
      function GetIsControlLocked() : boolean;
      procedure AfterProcessing(currentRoom : IRoom; bitmap : TBGRABitmap; deltaTime : Int64);
 
@@ -80,10 +83,23 @@ type
   end;
 
 type
+  TSwitchInfo = class
+     private
+       _composition : CompositionType;
+       _parameter : TObject;
+     public
+       constructor Create(compositionVal : CompositionType; parameterVal : TObject);
+
+       property Composition: CompositionType read _composition write _composition;
+       property Parameter: TObject read _parameter write _parameter;
+  end;
+
+type
   IComposition = interface
-     function RequireSwitch() : CompositionType;
+     function RequireSwitch() : TSwitchInfo;
      function GetCompositionType() : CompositionType;
      procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
+     procedure Initialize(parameter : TObject);
 
      procedure KeyDown(var Key: Word; Shift: TShiftState);
      procedure MouseMove(Shift: TShiftState; X, Y: Integer);
@@ -94,9 +110,16 @@ type
   ICharacter = interface
     function Render(state : CharacterState; deltaTimeSinceLastStateChange : Int64) : TBGRABitmap;
     function GetThumbnail() : TBGRABitmap;
+    function GetDesiredSize(roomSize : TSize) : TSize;
   end;
 
 implementation
+
+constructor TSwitchInfo.Create(compositionVal : CompositionType; parameterVal : TObject);
+begin
+  _composition := compositionVal;
+  _parameter := parameterVal;
+end;
 
 end.
 

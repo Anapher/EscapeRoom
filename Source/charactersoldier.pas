@@ -5,7 +5,7 @@ unit CharacterSoldier;
 interface
 
 uses
-  Classes, SysUtils, LevelDesign, BGRABitmap;
+  Classes, SysUtils, LevelDesign, BGRABitmap, LevelUtils;
 
 type
   TCharacterImageCacheEntry = class
@@ -19,7 +19,7 @@ type
        constructor Create();
        function Render(state : CharacterState; deltaTimeSinceLastStateChange : Int64) : TBGRABitmap;
        function GetThumbnail() : TBGRABitmap;
-
+       function GetDesiredSize(roomSize : TSize) : TSize;
     private
        function GetCachedImage(path : string) : TBGRABitmap;
        var _cachedEntries : array of TCharacterImageCacheEntry;
@@ -39,6 +39,13 @@ begin
         CharacterState.DefaultSouth:
           exit(GetCachedImage('resources\character\soldier\normal_south.png'));
    end;
+
+   exit(GetCachedImage('resources\character\soldier\normal_south.png'));
+end;
+
+function TCharacterSoldier.GetDesiredSize(roomSize : TSize) : TSize;
+begin
+   exit(TSize.Create(round(roomSize.Height / 800 * 133), round(roomSize.Width / 800 * 133)));
 end;
 
 function TCharacterSoldier.GetThumbnail() : TBGRABitmap;

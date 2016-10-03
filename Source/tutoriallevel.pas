@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LevelDesign, LevelUtils, SpecialExits, BGRABitmap,
-  BGRABitmapTypes, BGRAGradients, Storyboard;
+  BGRABitmapTypes, BGRAGradients, Storyboard, Objectives;
 
 type
   TTutorialLevel = class(ILevel)
@@ -15,7 +15,7 @@ type
      function GetRooms() : TRoomArray;
      function GetStartLocation() : TPoint;
      function GetSecureArea() : TPoint;
-     procedure DrawDefaultRoom(room : IRoom; bitmap : TBGRABitmap; location : TRect);
+     function DrawDefaultRoom(room : IRoom) : TBGRABitmap;
      function GetIsControlLocked() : boolean;
      procedure AfterProcessing(currentRoom : IRoom; bitmap : TBGRABitmap; deltaTime : Int64);
 
@@ -24,6 +24,8 @@ type
 
      var _storyboard : TStoryboard;
          _isControlLocked : boolean;
+         _currentRoom : IRoom;
+         _enteredCorridorRoom : boolean;
   end;
 
 type
@@ -31,11 +33,36 @@ type
      constructor Create();
      procedure EnterRoom();
      function GetExtendedExits() : TSpecialExitArray;
-     procedure Draw(bitmap : TBGRABitmap; location : TRect);
+     function Draw() : TBGRABitmap;
      function GetLocation() : TPoint;
 
      var _extendedExits : array of ISpecialExit;
          _normalBitmap, _doorOpenedBitmap : TBGRABitmap;
+  end;
+
+type
+  TStandardRoom = class(TInterfacedObject, IRoom)
+     public
+        constructor Create(location : TPoint);
+        procedure EnterRoom();
+        function GetExtendedExits() : TSpecialExitArray;
+        function GetLocation() : TPoint;
+     private
+        _location : TPoint;
+  end;
+
+type
+  TCorridorRoom = class(TInterfacedObject, ICustomDrawingRoom, IObjectiveRoom, IRoom)
+     public
+        constructor Create();
+        procedure EnterRoom();
+        function GetExtendedExits() : TSpecialExitArray;
+        function Draw() : TBGRABitmap;
+        function GetLocation() : TPoint;
+        function GetObjectives() : TObjectiveArray;
+        procedure ObjectiveCollected(objective : TObjective);
+     private
+        var _normalBitmap : TBGRABitmap;
   end;
 
 implementation
@@ -51,18 +78,22 @@ begin
     _storyboard.AddAnimation(TTextFadeAnimation.Create('Kommen Sie hierher zurück, sollten Sie irgendetwas bemerken.', BGRA(255, 255, 255, 200), 17000, 500, 2000));
     _storyboard.AddAnimation(TTextFadeAnimation.Create('Sie können sich jetzt mit den Pfeiltasten bewegen. Viel Glück!', BGRA(255, 255, 255, 200), 20000, 500, 3500));
     _isControlLocked := true;
+
+    _currentRoom := nil;
+    _enteredCorridorRoom := false;
 end;
 
 function TTutorialLevel.GetRooms() : TRoomArray;
    var roomArray : array[0..5] of IRoom;
 begin
     roomArray[0] := TStartRoom.Create();
+    roomArray[1] := TCorridorRoom.Create();
     exit(roomArray);
 end;
 
-procedure TTutorialLevel.DrawDefaultRoom(room : IRoom; bitmap : TBGRABitmap; location : TRect);
+function TTutorialLevel.DrawDefaultRoom(room : IRoom) : TBGRABitmap;
 begin
-
+   result := nil;
 end;
 
 procedure TTutorialLevel.AfterProcessing(currentRoom : IRoom; bitmap : TBGRABitmap; deltaTime : Int64);
@@ -71,7 +102,14 @@ begin
     bitmap.FontHeight := Round(bitmap.Height / 50);
     _storyboard.Render(bitmap, deltaTime);
 
-    if(deltaTime > 23500) then
+    if(currentRoom <> _currentRoom) then begin
+        _currentRoom := currentRoom;
+        if((currentRoom is TCorridorRoom) and (not _enteredCorridorRoom)) then begin
+            _enteredCorridorRoom := true;
+            _storyboard.AddAnimation(TTextFadeAnimation.Create('Oh, hier liegen Spritzen, sehr gut. Sammel Sie mit der Maus ein.', BGRA(255, 255, 255, 200), deltaTime, 500, 3000));
+        end;
+    end;
+    //if(deltaTime > 23500) then
        _isControlLocked := false;
 end;
 
@@ -118,7 +156,7 @@ begin
     exit(_extendedExits);
 end;
 
-procedure TStartRoom.Draw(bitmap : TBGRABitmap; location : TRect);
+function TStartRoom.Draw() : TBGRABitmap;
 var bitmapToDraw : TBGRABitmap;
 begin
    if(not _extendedExits[0].GetExitPassed()) then begin
@@ -132,12 +170,67 @@ begin
           _doorOpenedBitmap := TBGRABitmap.Create('resources\levels\tutorial\startRoom_open.png', false, [TBGRALoadingOption.loKeepTransparentRGB]);
    end;
 
-   bitmap.StretchPutImage(location, bitmapToDraw, dmDrawWithTransparency);
+   exit(bitmapToDraw);
 end;
 
 function TStartRoom.GetLocation() : TPoint;
 begin
    exit(TPoint.Create(0, 0));
+end;
+
+//StandardRoom
+constructor TStandardRoom.Create(location : TPoint);
+begin
+    _location := location;
+end;
+
+procedure TStandardRoom.EnterRoom();
+begin
+end;
+
+function TStandardRoom.GetExtendedExits() : TSpecialExitArray;
+begin
+    exit(nil);
+end;
+
+function TStandardRoom.GetLocation() : TPoint;
+begin
+   exit(_location);
+end;
+
+//Corridor
+constructor TCorridorRoom.Create();
+begin
+    _normalBitmap := TBGRABitmap.Create('resources\levels\tutorial\corridorRoom.png', false);
+end;
+
+procedure TCorridorRoom.EnterRoom();
+begin
+end;
+
+function TCorridorRoom.GetExtendedExits() : TSpecialExitArray;
+begin
+    exit(nil);
+end;
+
+function TCorridorRoom.Draw() : TBGRABitmap;
+begin
+   exit(_normalBitmap);
+end;
+
+function TCorridorRoom.GetLocation() : TPoint;
+begin
+   exit(TPoint.Create(1, 0));
+end;
+
+function TCorridorRoom.GetObjectives() : TObjectiveArray;
+begin
+   exit(nil);
+end;
+
+procedure TCorridorRoom.ObjectiveCollected(objective : TObjective);
+begin
+
 end;
 
 end.

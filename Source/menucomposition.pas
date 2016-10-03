@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelDesign,
-  Controls, DrawableUiElements, Types, Forms, LCLType;
+  Controls, DrawableUiElements, Types, Forms, LCLType, TutorialLevel, GameComposition,
+  CharacterSoldier;
 
 const
   MenuButtonRelWidth = 0.4; //rel = relative
@@ -16,13 +17,14 @@ const
 type
   TMenuComposition = class(IComposition)
      private
-       _requestedComposition : CompositionType;
+       _requestedSwitchInfo : TSwitchInfo;
        _buttons : array of TDrawableButton;
      public
        constructor Create(); overload;
-       function RequireSwitch() : CompositionType;
+       function RequireSwitch() : TSwitchInfo;
        function GetCompositionType() : CompositionType;
        procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
+       procedure Initialize(parameter : TObject);
 
        procedure KeyDown(var Key: Word; Shift: TShiftState);
        procedure MouseMove(Shift: TShiftState; X, Y: Integer);
@@ -36,7 +38,7 @@ implementation
 
 constructor TMenuComposition.Create();
 begin
-    _requestedComposition := CompositionType.None;
+    _requestedSwitchInfo := nil;
 
     SetLength(_buttons, 3);
 
@@ -45,14 +47,19 @@ begin
     _buttons[2] := TDrawableButton.Create('Beenden', 2);
 end;
 
-function TMenuComposition.RequireSwitch() : CompositionType;
+procedure TMenuComposition.Initialize(parameter : TObject);
 begin
-    result := _requestedComposition;
+
+end;
+
+function TMenuComposition.RequireSwitch() : TSwitchInfo;
+begin
+    exit(_requestedSwitchInfo);
 end;
 
 function TMenuComposition.GetCompositionType() : CompositionType;
 begin
-    result := CompositionType.Menu;
+    exit(CompositionType.Menu);
 end;
 
 procedure TMenuComposition.Render(bitmap : TBGRABitmap; deltaTime : Int64);
@@ -188,7 +195,7 @@ end;
 procedure TMenuComposition.DoButtonAction(button : TDrawableButton);
 begin
    Case button.Id of
-      0: _requestedComposition := CompositionType.Game;
+      0: _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Game, TGameCompositionInfo.Create(TTutorialLevel.Create(), TCharacterSoldier.Create()));
       1: ;
       2: Application.Terminate;
    end;

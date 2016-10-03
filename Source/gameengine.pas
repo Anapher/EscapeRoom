@@ -107,6 +107,7 @@ end;
 
 procedure TGameEngine.RenderLoopTimer(sender : TObject);
 var deltaTime : Int64;
+    requiredSwitch : TSwitchInfo;
 begin
     deltaTime := MilliSecondsBetween(_beginTime, Now);
 
@@ -117,8 +118,10 @@ begin
     _currentComposition.Render(_renderImage, deltaTime);
     _ownerForm.Invalidate();
 
-    if (_currentComposition.RequireSwitch <> CompositionType.None) then begin
-       _currentComposition := GetComposition(_currentComposition.RequireSwitch);
+    requiredSwitch := _currentComposition.RequireSwitch();
+    if (requiredSwitch <> nil) then begin
+       _currentComposition := GetComposition(requiredSwitch.Composition);
+       _currentComposition.Initialize(requiredSwitch.Parameter);
        _beginTime := Now;
     end;
 end;
