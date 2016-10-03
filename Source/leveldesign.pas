@@ -20,6 +20,10 @@ type
   CompositionType = (None, Intro, Menu, Game, DoorUnlocking, OffScreen);
 
 type
+  {$PACKENUM 1}
+  CharacterState = (DefaultNorth, DefaultEast, DefaultSouth, DefaultWest, RunningNorth, RunningEast, RunningSouth, RunningWest);
+
+type
   ISpecialExit = interface
       function GetExitPosition() : Direction;
       procedure SetExitPassed();
@@ -40,7 +44,7 @@ type
 type
   ICustomDrawingRoom = interface(IRoom)
   ['{0b3a3d3d-af46-4afa-bc24-4f3a8610a7b8}']
-      procedure Draw(bitmap : TBGRABitmap);
+      procedure Draw(bitmap : TBGRABitmap; location : TRect);
   end;
 
 type
@@ -65,10 +69,14 @@ type
      function GetRooms() : TRoomArray;
      function GetStartLocation() : TPoint;
      function GetSecureArea() : TPoint;
-     procedure DrawDefaultRoom(room : IRoom; bitmap : TBGRABitmap);
+     procedure DrawDefaultRoom(room : IRoom; bitmap : TBGRABitmap; location : TRect);
+     function GetIsControlLocked() : boolean;
+     procedure AfterProcessing(currentRoom : IRoom; bitmap : TBGRABitmap; deltaTime : Int64);
 
      function GetLevelName() : string;
      function GetDifficulty() : integer;
+
+     property IsControlLocked: boolean read GetIsControlLocked;
   end;
 
 type
@@ -80,6 +88,12 @@ type
      procedure KeyDown(var Key: Word; Shift: TShiftState);
      procedure MouseMove(Shift: TShiftState; X, Y: Integer);
      procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+  end;
+
+type
+  ICharacter = interface
+    function Render(state : CharacterState; deltaTimeSinceLastStateChange : Int64) : TBGRABitmap;
+    function GetThumbnail() : TBGRABitmap;
   end;
 
 implementation

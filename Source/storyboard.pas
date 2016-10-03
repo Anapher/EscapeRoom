@@ -80,11 +80,11 @@ procedure TTextFadeAnimation.RenderInternal(bitmap : TBGRABitmap; relativeTime, 
          displayDuration : Int64);
 begin
     if (relativeTime < fadeDuration) then
-        DefaultEffectMaker.Create().FadeText(_text, _color, fadeDuration, relativeTime, true, bitmap)
+        FadeText(_text, _color, fadeDuration, relativeTime, true, bitmap)
     else if((relativeTime > fadeDuration) and (relativeTime < fadeDuration + displayDuration)) then
-        DefaultEffectMaker.Create().DrawCenteredText(_text, bitmap, _color)
+        DrawCenteredText(_text, bitmap, _color)
     else if ((relativeTime > fadeDuration + displayDuration) and (relativeTime < fadeDuration * 2 + displayDuration)) then
-        DefaultEffectMaker.Create().FadeText(_text, _color, fadeDuration, relativeTime - fadeDuration - displayDuration, false, bitmap);
+        FadeText(_text, _color, fadeDuration, relativeTime - fadeDuration - displayDuration, false, bitmap);
 end;
 
 //Storyboard

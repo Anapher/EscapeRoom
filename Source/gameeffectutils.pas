@@ -7,20 +7,16 @@ interface
 uses
   Classes, SysUtils, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelUtils, Types;
 
-type
-  DefaultEffectMaker = class
-    public
-       procedure FadeText(text : string; x, y : integer; color : TBGRAPixel; duration : integer;
+procedure FadeText(text : string; x, y : integer; color : TBGRAPixel; duration : integer;
          deltaTime : integer; fadeIn : boolean; bitmap : TBGRABitmap);
-       procedure FadeText(text : string; color : TBGRAPixel; duration : integer;
+procedure FadeText(text : string; color : TBGRAPixel; duration : integer;
          deltaTime : integer; fadeIn : boolean; bitmap : TBGRABitmap); overload;
-       function GetTextCenterPoint(text : string; bitmap : TBGRABitmap) : TRectangle;
-       procedure DrawCenteredText(text : string; bitmap : TBGRABitmap; color : TBGRAPixel);
-  end;
+function GetTextCenterPoint(text : string; bitmap : TBGRABitmap) : TRectangle;
+procedure DrawCenteredText(text : string; bitmap : TBGRABitmap; color : TBGRAPixel);
 
 implementation
 
-procedure DefaultEffectMaker.FadeText(text : string; x, y : integer; color : TBGRAPixel; duration : integer;
+procedure FadeText(text : string; x, y : integer; color : TBGRAPixel; duration : integer;
   deltaTime : integer; fadeIn : boolean; bitmap : TBGRABitmap);
 begin
   if(fadeIn) then
@@ -31,7 +27,7 @@ begin
   bitmap.TextOut(x, y, text, color);
 end;
 
-procedure DefaultEffectMaker.FadeText(text : string; color : TBGRAPixel; duration : integer;
+procedure FadeText(text : string; color : TBGRAPixel; duration : integer;
          deltaTime : integer; fadeIn : boolean; bitmap : TBGRABitmap);
 var position : TRectangle;
 begin
@@ -39,7 +35,7 @@ begin
     FadeText(text, position.X, position.Y, color, duration, deltaTime, fadeIn, bitmap);
 end;
 
-function DefaultEffectMaker.GetTextCenterPoint(text : string; bitmap : TBGRABitmap) : TRectangle;
+function GetTextCenterPoint(text : string; bitmap : TBGRABitmap) : TRectangle;
 var textSize : TSize;
 begin
     textSize := bitmap.TextSize(text);
@@ -48,7 +44,7 @@ begin
          round((bitmap.Height - textSize.cy) / 2), textSize.cx, textSize.cy));
 end;
 
-procedure DefaultEffectMaker.DrawCenteredText(text : string; bitmap : TBGRABitmap; color : TBGRAPixel);
+procedure DrawCenteredText(text : string; bitmap : TBGRABitmap; color : TBGRAPixel);
 var position : TRectangle;
 begin
    position := GetTextCenterPoint(text, bitmap);
