@@ -261,9 +261,9 @@ var relativeLocation : TRectangle;
     factor : single;
     wallImage : TBGRACustomBitmap;
 begin
+    factor := mapLocation.Width / roomBitmap.Width;
     wallLength := 300;
     wallWidth := 110;
-    factor := mapLocation.Width / roomBitmap.Width;
 
     case wallDirection of
          Direction.Top:
