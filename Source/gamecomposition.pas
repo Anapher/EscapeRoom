@@ -45,6 +45,7 @@ type
         procedure DrawObjectives(room : IObjectiveRoom; bitmap : TBGRACustomBitmap; finalRoomRectangle : TRectangle);
         procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
         function GetOppositeDirection(direction : Direction) : Direction;
+        procedure RedrawWall(wallDirection : Direction; mapLocation : TRectangle; roomBitmap, bitmap : TBGRACustomBitmap);
 
         procedure KeyDown(var Key: Word; Shift: TShiftState);
         procedure MouseMove(Shift: TShiftState; X, Y: Integer);
@@ -239,21 +240,49 @@ begin
     //bitmap.Rectangle(characterLocation.X - 5, characterLocation.Y - 5, characterLocation.X + 5, characterLocation.Y + 5, BGRA(255, 255, 255), TDrawMode.dmSet);
 
     _currentLevel.AfterProcessing(_currentRoom, bitmap, deltaTime);
-    if(_currentCharacterMode <> CharacterMode.Normal) then begin
-       // case _targetedLocation of
-      //      Right:
-      //        redrawArea := TRectangle.Create(roomBitmapLocation.X + roomBitmapLocation.Width - 100);
-      //  end;
-    end;
+    if(_currentCharacterMode = CharacterMode.RunningToDoor) then
+       RedrawWall(_targetedLocation, roomBitmapLocation, roomImage, bitmap);
 
-    //bitmap.PutImagePart();
+    if(_currentCharacterMode = CharacterMode.RunningFromDoor) then
+       RedrawWall(GetOppositeDirection(_targetedLocation), roomBitmapLocation, roomImage, bitmap);
 
     if(freeRoomImage) then
        roomImage.Free();
+
     if(deltaTime < 1000) then
        bitmap.Rectangle(0, 0, bitmap.Width, bitmap.Height, BGRA(0, 0, 0,
        round(255 - (deltaTime / 1000 * 255))), BGRA(0, 0, 0,
        round(255 - (deltaTime / 1000 * 255))), dmDrawWithTransparency);
+end;
+
+procedure TGameComposition.RedrawWall(wallDirection : Direction; mapLocation : TRectangle; roomBitmap, bitmap : TBGRACustomBitmap);
+var relativeLocation : TRectangle;
+    wallLength, wallWidth : integer;
+    factor : single;
+    wallImage : TBGRACustomBitmap;
+begin
+    wallLength := 300;
+    wallWidth := 110;
+    factor := mapLocation.Width / roomBitmap.Width;
+
+    case wallDirection of
+         Direction.Top:
+           relativeLocation := TRectangle.Create(round((roomBitmap.Width - wallLength) / 2), 0, wallLength, wallWidth);
+         Direction.Bottom:
+           relativeLocation := TRectangle.Create(round((roomBitmap.Width - wallLength) / 2), roomBitmap.Height - wallWidth, wallLength, wallWidth);
+         Direction.Right:
+           relativeLocation := TRectangle.Create(roomBitmap.Width - wallWidth, round((roomBitmap.Height - wallLength) / 2), wallWidth, wallLength);
+         Direction.Left:
+           relativeLocation := TRectangle.Create(0, round((roomBitmap.Height - wallLength) / 2), wallWidth, wallLength);
+    end;
+
+    wallImage := roomBitmap.GetPart(RectWithSize(relativeLocation.X, relativeLocation.Y, relativeLocation.Width, relativeLocation.Height));
+
+    bitmap.StretchPutImage(RectWithSize(round(mapLocation.X + relativeLocation.X * factor), round(mapLocation.Y + relativeLocation.Y * factor),
+                           round(relativeLocation.Width * factor), round(relativeLocation.Height * factor)), wallImage, TDrawMode.dmDrawWithTransparency);
+    wallImage.Free();
+    //bitmap.PutImagePart(round(mapLocation.X + relativeLocation.X * factor), round(mapLocation.Y + relativeLocation.Y * factor),
+    //                    roomBitmap, RectWithSize(relativeLocation.X, relativeLocation.Y, relativeLocation.Width, relativeLocation.Height), TDrawMode.dmSet);
 end;
 
 function TGameComposition.GetOppositeDirection(direction : Direction) : Direction;
