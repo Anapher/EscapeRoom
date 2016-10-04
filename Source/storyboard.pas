@@ -45,6 +45,7 @@ type
       constructor Create();
       procedure AddAnimation(animation : IAnimation);
       procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
+      procedure Clear();
       property IsFinished: boolean read _isFinished;
   end;
 
@@ -136,6 +137,15 @@ begin
       if(_animations[i] <> nil) then //if one is not nil, we are not done!
          exit(false);
     end;
+end;
+
+procedure TStoryboard.Clear();
+var i : integer;
+begin
+   for i := 0 to Length(_animations) - 1 do
+     _animations[i] := nil;
+
+   _isFinished := true;
 end;
 
 end.

@@ -5,15 +5,16 @@ unit Objectives;
 interface
 
 uses
-  Classes, SysUtils, LevelUtils, BGRABitmap;
+  Classes, SysUtils, LevelUtils, BGRABitmap, BGRABitmapTypes;
 
 type
   TObjective = class
     private
       _location : TRectangle;
-      _objectiveId, _folder : string;
+      _objectiveId, _normalImagePath, _hoveredImagePath : string;
+      _cachedNormalImage, _cachedHoveredImage : TBGRABitmap;
     public
-      constructor Create(objectiveIdVal : string; locationVal : TRectangle; folder : string);
+      constructor Create(objectiveIdVal : string; locationVal : TRectangle; normalImagePath, hoveredImagePath : string);
       property Location: TRectangle read _location;
       property ObjectiveId: string read _objectiveId;
 
@@ -22,15 +23,27 @@ type
 
 implementation
 
-constructor TObjective.Create(objectiveIdVal : string; locationVal : TRectangle; folder : string);
+constructor TObjective.Create(objectiveIdVal : string; locationVal : TRectangle; normalImagePath, hoveredImagePath : string);
 begin
     _objectiveId := objectiveIdVal;
     _location := locationVal;
-    _folder := folder;
+    _normalImagePath := normalImagePath;
+    _hoveredImagePath := hoveredImagePath;
 end;
 
 function TObjective.GetObjectiveImage(mouseOver : boolean) : TBGRABitmap;
 begin
+   if(not mouseOver) then begin
+      if(_cachedNormalImage = nil) then
+         _cachedNormalImage := TBGRABitmap.Create(_normalImagePath);
+      exit(_cachedNormalImage);
+   end
+   else begin
+     if(_cachedHoveredImage = nil) then
+        _cachedHoveredImage := TBGRABitmap.Create(_hoveredImagePath);
+
+     exit(_cachedHoveredImage);
+   end;
 
 end;
 

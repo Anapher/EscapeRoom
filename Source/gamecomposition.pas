@@ -42,7 +42,7 @@ type
         function GetRoomByCoordinates(x, y : integer) : IRoom;
         procedure EnterRoom(room : IRoom);
         function ComputeCharacterPositionLinear(originPoint, targetPoint : TPoint; currentProgress, maximumProgress : integer) : TPoint;
-        procedure DrawObjectives(room : IObjectiveRoom; bitmap : TBGRABitmap);
+        procedure DrawObjectives(room : IObjectiveRoom; bitmap : TBGRACustomBitmap; finalRoomRectangle : TRectangle);
         procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
         function GetOppositeDirection(direction : Direction) : Direction;
 
@@ -121,13 +121,17 @@ end;
 
 procedure TGameComposition.Render(bitmap : TBGRABitmap; deltaTime : Int64);
 var customDrawingRoom : ICustomDrawingRoom;
-    characterImage, roomImage : TBGRABitmap;
-    deltaCharacterMovement, shortestSide, i : integer;
+    characterImage : TBGRABitmap;
+    deltaCharacterMovement, shortestSide : integer;
     doorLocation, centeredLocation, characterLocation : TPoint;
-    roomBitmapLocation : TRectangle;
+    roomBitmapLocation, redrawArea : TRectangle;
     characterSize : TSize;
     objectiveRoom : IObjectiveRoom;
+    freeRoomImage : boolean;
+    roomImage : TBGRACustomBitmap;
 begin
+    freeRoomImage := false;
+
     if(bitmap.Width > bitmap.Height) then
        shortestSide := bitmap.Height
     else
@@ -208,16 +212,19 @@ begin
 
     //First, we check if the room wants to draw itself
     if(Supports(_currentRoom, ICustomDrawingRoom, customDrawingRoom)) then //if yes, then we let it
-       roomImage := customDrawingRoom.Draw()
+       roomImage := customDrawingRoom.Draw() as TBGRACustomBitmap
     else
-       roomImage := _currentLevel.DrawDefaultRoom(_currentRoom); //if no, the level should draw it
+       roomImage := _currentLevel.DrawDefaultRoom(_currentRoom) as TBGRACustomBitmap; //if no, the level should draw it
 
     if (Supports(_currentRoom, IObjectiveRoom, objectiveRoom)) then begin
-        DrawObjectives(objectiveRoom, roomImage);
+        roomImage := roomImage.Duplicate(); //we must duplicate the image because DrawObjectives draws on it and the room always returns the same bitmap
+        freeRoomImage := true;
+        DrawObjectives(objectiveRoom, roomImage, roomBitmapLocation);
     end;
 
     bitmap.StretchPutImage(RectWithSize(roomBitmapLocation.X,
                                      roomBitmapLocation.Y, roomBitmapLocation.Width, roomBitmapLocation.Height), roomImage, TDrawMode.dmDrawWithTransparency);
+
     //we draw the character
     characterImage := _character.Render(_currentCharacterState, MilliSecondsBetween(_lastCharacterUpdate, Now));
     characterSize := _character.GetDesiredSize(roomBitmapLocation.ToSize());
@@ -232,7 +239,17 @@ begin
     //bitmap.Rectangle(characterLocation.X - 5, characterLocation.Y - 5, characterLocation.X + 5, characterLocation.Y + 5, BGRA(255, 255, 255), TDrawMode.dmSet);
 
     _currentLevel.AfterProcessing(_currentRoom, bitmap, deltaTime);
+    if(_currentCharacterMode <> CharacterMode.Normal) then begin
+       // case _targetedLocation of
+      //      Right:
+      //        redrawArea := TRectangle.Create(roomBitmapLocation.X + roomBitmapLocation.Width - 100);
+      //  end;
+    end;
 
+    //bitmap.PutImagePart();
+
+    if(freeRoomImage) then
+       roomImage.Free();
     if(deltaTime < 1000) then
        bitmap.Rectangle(0, 0, bitmap.Width, bitmap.Height, BGRA(0, 0, 0,
        round(255 - (deltaTime / 1000 * 255))), BGRA(0, 0, 0,
@@ -253,15 +270,23 @@ begin
     end;
 end;
 
-procedure TGameComposition.DrawObjectives(room : IObjectiveRoom; bitmap : TBGRABitmap);
+procedure TGameComposition.DrawObjectives(room : IObjectiveRoom; bitmap : TBGRACustomBitmap; finalRoomRectangle : TRectangle);
    var objective : TObjective;
-       drawHovered : boolean;
+       drawHovered, isElementHovered : boolean;
+   var relativeMouseX, relativeMouseY : Integer;
 begin
+   //we have to calculate the relative cursor position
+   relativeMouseX := round((_currentMouseX - finalRoomRectangle.X) * (bitmap.Width / finalRoomRectangle.Width));
+   relativeMouseY := round((_currentMouseY - finalRoomRectangle.Y) * (bitmap.Height / finalRoomRectangle.Height));
+
+   isElementHovered := false; //we don't want two hovered objectives
    for objective in room.GetObjectives() do begin
-      drawHovered := (_currentMouseX > objective.Location.X) and (_currentMouseX < objective.Location.X + objective.Location.Width)
-                      and (_currentMouseY > objective.Location.Y) and (_currentMouseY < objective.Location.Y + objective.Location.Height);
+      drawHovered := (relativeMouseX > objective.Location.X) and (relativeMouseX < objective.Location.X + objective.Location.Width) and
+                      (relativeMouseY > objective.Location.Y) and (relativeMouseY < objective.Location.Y + objective.Location.Height);
       bitmap.StretchPutImage(RectWithSize(objective.Location.X, objective.Location.Y, objective.Location.Width, objective.Location.Height),
-                             objective.GetObjectiveImage(drawHovered), TDrawMode.dmDrawWithTransparency);
+                             objective.GetObjectiveImage((not isElementHovered) and drawHovered), TDrawMode.dmDrawWithTransparency);
+      if(drawHovered) then
+         isElementHovered := true;
    end;
 end;
 
