@@ -15,7 +15,7 @@ const
 
 type
   {$PACKENUM 1}
-  CharacterMode = (Normal, RunningToDoor, RunningFromDoor);
+  CharacterMode = (Normal, RunningToDoor, RunningFromDoor, Scared);
 
 type
   TGameComposition = class(IComposition)
@@ -34,6 +34,7 @@ type
         _targetedRoom : IRoom;
         _targetedLocation : Direction;
         _currentMouseX, _currentMouseY : integer;
+        _targetRoomContainsMonster, _isInEscapingMode : boolean;
      public
         constructor Create(); overload;
         function RequireSwitch() : TSwitchInfo;
@@ -46,6 +47,8 @@ type
         procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
         function GetOppositeDirection(direction : Direction) : Direction;
         procedure RedrawWall(wallDirection : Direction; mapLocation : TRectangle; roomBitmap, bitmap : TBGRACustomBitmap);
+        procedure SetTargetRoom(newRoom : IRoom; roomDirection : Direction);
+        function GetDoorLocation(location : Direction; roomBitmapLocation : TRectangle) : TPoint;
 
         procedure KeyDown(var Key: Word; Shift: TShiftState);
         procedure MouseMove(Shift: TShiftState; X, Y: Integer);
@@ -125,11 +128,12 @@ var customDrawingRoom : ICustomDrawingRoom;
     characterImage : TBGRABitmap;
     deltaCharacterMovement, shortestSide : integer;
     doorLocation, centeredLocation, characterLocation : TPoint;
-    roomBitmapLocation, redrawArea : TRectangle;
+    roomBitmapLocation : TRectangle;
     characterSize : TSize;
     objectiveRoom : IObjectiveRoom;
     freeRoomImage : boolean;
     roomImage : TBGRACustomBitmap;
+    monsterRoom : IMonsterRoom;
 begin
     freeRoomImage := false;
 
@@ -156,17 +160,7 @@ begin
             _targetedRoom := nil;
          end
          else begin
-            case _targetedLocation of
-                 Direction.Right:
-                   doorLocation := TPoint.Create(roomBitmapLocation.X + roomBitmapLocation.Width, round((roomBitmapLocation.Y + roomBitmapLocation.Height) / 2));
-                 Direction.Left:
-                   doorLocation := TPoint.Create(roomBitmapLocation.X, round((roomBitmapLocation.Y + roomBitmapLocation.Height) / 2));
-                 Direction.Top:
-                   doorLocation := TPoint.Create(round((roomBitmapLocation.X + roomBitmapLocation.Width) / 2), roomBitmapLocation.Y);
-                 Direction.Bottom:
-                   doorLocation := TPoint.Create(round((roomBitmapLocation.X + roomBitmapLocation.Width) / 2), roomBitmapLocation.Y + roomBitmapLocation.Height);
-            end;
-
+            doorLocation := GetDoorLocation(_targetedLocation, roomBitmapLocation);
             characterLocation := ComputeCharacterPositionLinear(centeredLocation, doorLocation,
                                                                 deltaCharacterMovement, CharacterMoveOutTime);
          end;
@@ -175,7 +169,7 @@ begin
     //NO ELSE IF!!!!
     if(_currentCharacterMode = CharacterMode.RunningFromDoor) then begin
          deltaCharacterMovement := MilliSecondsBetween(_currentCharacterProcessStartTime, Now);
-         if(deltaCharacterMovement > CharacterMoveOutTime + CharacterMoveInTime) then begin
+         if((deltaCharacterMovement > CharacterMoveOutTime + CharacterMoveInTime) or (_targetRoomContainsMonster and (deltaCharacterMovement > CharacterMoveOutTime + round(CharacterMoveInTime / 2)))) then begin
               case _currentCharacterState of
                    CharacterState.RunningEast:
                      _currentCharacterState := CharacterState.DefaultEast;
@@ -188,10 +182,17 @@ begin
               end;
 
               _lastCharacterUpdate := Now;
-              _currentCharacterMode := CharacterMode.Normal;
+
+              if(_targetRoomContainsMonster) then begin
+                   _currentCharacterMode := CharacterMode.Scared;
+                   _isInEscapingMode := true;
+              end
+              else begin
+                   _currentCharacterMode := CharacterMode.Normal;
+              end;
          end
          else begin
-            case GetOppositeDirection(_targetedLocation) of
+           case GetOppositeDirection(_targetedLocation) of
                  Direction.Right:
                    doorLocation := TPoint.Create(roomBitmapLocation.X + roomBitmapLocation.Width, round((roomBitmapLocation.Y + roomBitmapLocation.Height) / 2));
                  Direction.Left:
@@ -201,9 +202,14 @@ begin
                  Direction.Bottom:
                    doorLocation := TPoint.Create(round((roomBitmapLocation.X + roomBitmapLocation.Width) / 2), roomBitmapLocation.Y + roomBitmapLocation.Height);
             end;
-            characterLocation := ComputeCharacterPositionLinear(doorLocation, centeredLocation,
-                                                                deltaCharacterMovement - CharacterMoveOutTime, CharacterMoveInTime);
+           doorLocation := GetDoorLocation(GetOppositeDirection(_targetedLocation), roomBitmapLocation);
+           characterLocation := ComputeCharacterPositionLinear(doorLocation, centeredLocation,
+                                                               deltaCharacterMovement - CharacterMoveOutTime, CharacterMoveInTime);
          end;
+    end;
+
+    if(_currentCharacterMode = CharacterMode.Scared) then begin
+         characterLocation := ComputeCharacterPositionLinear(GetDoorLocation(GetOppositeDirection(_targetedLocation), roomBitmapLocation), centeredLocation, round(CharacterMoveInTime / 2), CharacterMoveInTime);
     end;
 
     if(_currentCharacterMode = CharacterMode.Normal) then begin
@@ -211,11 +217,18 @@ begin
          characterLocation := centeredLocation;
     end;
 
-    //First, we check if the room wants to draw itself
-    if(Supports(_currentRoom, ICustomDrawingRoom, customDrawingRoom)) then //if yes, then we let it
+    //First, we check if the room is a monster room
+    if(Supports(_currentRoom, IMonsterRoom, monsterRoom)) then begin
+       if(monsterRoom.ContainsMonster()) then
+          roomImage := monsterRoom.DrawWithMonster()
+       else
+          roomImage := monsterRoom.Draw();
+    end
+    else if(Supports(_currentRoom, ICustomDrawingRoom, customDrawingRoom)) then //then we check if it wants to draw itself
        roomImage := customDrawingRoom.Draw() as TBGRACustomBitmap
     else
        roomImage := _currentLevel.DrawDefaultRoom(_currentRoom) as TBGRACustomBitmap; //if no, the level should draw it
+
 
     if (Supports(_currentRoom, IObjectiveRoom, objectiveRoom)) then begin
         roomImage := roomImage.Duplicate(); //we must duplicate the image because DrawObjectives draws on it and the room always returns the same bitmap
@@ -319,6 +332,20 @@ begin
    end;
 end;
 
+function TGameComposition.GetDoorLocation(location : Direction; roomBitmapLocation : TRectangle) : TPoint;
+begin
+    case location of
+      Direction.Right:
+         exit(TPoint.Create(roomBitmapLocation.X + roomBitmapLocation.Width, round(roomBitmapLocation.Y + roomBitmapLocation.Height / 2)));
+      Direction.Left:
+         exit(TPoint.Create(roomBitmapLocation.X, round(roomBitmapLocation.Y + roomBitmapLocation.Height / 2)));
+      Direction.Top:
+         exit(TPoint.Create(round(roomBitmapLocation.X + roomBitmapLocation.Width / 2), roomBitmapLocation.Y));
+      Direction.Bottom:
+         exit(TPoint.Create(round(roomBitmapLocation.X + roomBitmapLocation.Width / 2), roomBitmapLocation.Y + roomBitmapLocation.Height));
+    end;
+end;
+
 function TGameComposition.ComputeCharacterPositionLinear(originPoint, targetPoint : TPoint; currentProgress, maximumProgress : integer) : TPoint;
 var currentX, currentY : integer;
 begin
@@ -328,6 +355,7 @@ begin
 
    exit(TPoint.Create(currentX, currentY));
 end;
+
 procedure TGameComposition.KeyDown(var Key: Word; Shift: TShiftState);
 var newRoom : IRoom;
     currentRoomLocation : TPoint;
@@ -345,12 +373,7 @@ begin
          if(newRoom = nil) then
             exit;
 
-         _currentCharacterState := CharacterState.RunningEast;
-         _currentCharacterMode := CharacterMode.RunningToDoor;
-         _currentCharacterProcessStartTime := Now;
-         _lastCharacterUpdate := Now;
-         _targetedLocation := Direction.Right;
-         _targetedRoom := newRoom;
+         SetTargetRoom(newRoom, Direction.Right);
          exit;
     end;
 
@@ -362,14 +385,57 @@ begin
          if(newRoom = nil) then
             exit;
 
-         _currentCharacterState := CharacterState.RunningWest;
-         _currentCharacterMode := CharacterMode.RunningToDoor;
-         _currentCharacterProcessStartTime := Now;
-         _lastCharacterUpdate := Now;
-         _targetedLocation := Direction.Left;
-         _targetedRoom := newRoom;
+         SetTargetRoom(newRoom, Direction.Left);
          exit;
     end;
+
+    //move up
+    if((Key = VK_Up) or (Key = VK_S)) then begin
+         //we get the room which is left to ours
+         newRoom := GetRoomByCoordinates(currentRoomLocation.X, currentRoomLocation.Y + 1);
+         //if there isn't a room, we just return
+         if(newRoom = nil) then
+            exit;
+
+         SetTargetRoom(newRoom, Direction.Top);
+         exit;
+    end;
+
+    //move down
+    if((Key = VK_Down) or (Key = VK_W)) then begin
+         //we get the room which is left to ours
+         newRoom := GetRoomByCoordinates(currentRoomLocation.X, currentRoomLocation.Y - 1);
+         //if there isn't a room, we just return
+         if(newRoom = nil) then
+            exit;
+
+         SetTargetRoom(newRoom, Direction.Bottom);
+         exit;
+    end;
+end;
+
+procedure TGameComposition.SetTargetRoom(newRoom : IRoom; roomDirection : Direction);
+var monsterRoom : IMonsterRoom;
+begin
+    _currentCharacterMode := CharacterMode.RunningToDoor;
+    _targetedLocation := roomDirection;
+    _targetedRoom := newRoom;
+
+    case roomDirection of
+         Direction.Top:
+           _currentCharacterState := CharacterState.RunningNorth;
+         Direction.Bottom:
+           _currentCharacterState := CharacterState.RunningSouth;
+         Direction.Left:
+           _currentCharacterState := CharacterState.RunningWest;
+         Direction.Right:
+           _currentCharacterState := CharacterState.RunningEast;
+    end;
+
+    _targetRoomContainsMonster := Supports(newRoom, IMonsterRoom, monsterRoom) and (monsterRoom.ContainsMonster());
+
+    _currentCharacterProcessStartTime := Now;
+    _lastCharacterUpdate := Now;
 end;
 
 procedure TGameComposition.MouseMove(Shift: TShiftState; X, Y: Integer);

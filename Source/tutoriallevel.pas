@@ -66,6 +66,20 @@ type
             _injection1, _injection2 : TObjective;
   end;
 
+type
+  TMonsterRoom1 = class(TInterfacedObject, ICustomDrawingRoom, IRoom, IMonsterRoom)
+     public
+        constructor Create();
+        procedure EnterRoom();
+        function GetExtendedExits() : TSpecialExitArray;
+        function GetLocation() : TPoint;
+        function Draw() : TBGRABitmap;
+        function DrawWithMonster() : TBGRABitmap;
+        function ContainsMonster() : boolean;
+     private
+        var _normalBitmap, _monsterBitmap : TBGRABitmap;
+  end;
+
 implementation
 
 constructor TTutorialLevel.Create();
@@ -85,10 +99,11 @@ begin
 end;
 
 function TTutorialLevel.GetRooms() : TRoomArray;
-   var roomArray : array[0..5] of IRoom;
+   var roomArray : array[0..2] of IRoom;
 begin
     roomArray[0] := TStartRoom.Create();
     roomArray[1] := TCorridorRoom.Create();
+    roomArray[2] := TMonsterRoom1.Create();
     exit(roomArray);
 end;
 
@@ -239,7 +254,41 @@ end;
 
 procedure TCorridorRoom.ObjectiveCollected(objective : TObjective);
 begin
+end;
 
+constructor TMonsterRoom1.Create();
+begin
+   _normalBitmap := TBGRABitmap.Create('resources\levels\tutorial\monsterRoom1_wm.png', false);
+   _monsterBitmap := TBGRABitmap.Create('resources\levels\tutorial\monsterRoom1.png', false);
+end;
+
+procedure TMonsterRoom1.EnterRoom();
+begin
+end;
+
+function TMonsterRoom1.GetExtendedExits() : TSpecialExitArray;
+begin
+   exit(nil);
+end;
+
+function TMonsterRoom1.GetLocation() : TPoint;
+begin
+   exit(TPoint.Create(1, -1));
+end;
+
+function TMonsterRoom1.Draw() : TBGRABitmap;
+begin
+   exit(_normalBitmap);
+end;
+
+function TMonsterRoom1.DrawWithMonster() : TBGRABitmap;
+begin
+   exit(_monsterBitmap);
+end;
+
+function TMonsterRoom1.ContainsMonster() : boolean;
+begin
+   exit(true);
 end;
 
 end.

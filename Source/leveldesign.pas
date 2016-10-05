@@ -60,7 +60,7 @@ type
 type
   IMonsterRoom = interface(ICustomDrawingRoom)
   ['{fafdfac0-1312-4b55-a37e-5f594103de25}']
-      procedure DrawWithMonster(bitmap : TBGRABitmap);
+      function DrawWithMonster() : TBGRABitmap;
       function ContainsMonster() : boolean;
   end;
 
