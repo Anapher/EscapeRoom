@@ -7,7 +7,8 @@ interface
 
 uses
   Classes, SysUtils, BGRABitmap, LevelDesign, Controls, Storyboard, Math,
-  LevelUtils, BGRABitmapTypes, BGRAGradients, LCLType, DateUtils, Objectives;
+  LevelUtils, BGRABitmapTypes, BGRAGradients, LCLType, DateUtils, Objectives,
+  HeadUpDisplay;
 
 const
   CharacterMoveOutTime = 500;
@@ -35,6 +36,7 @@ type
         _targetedLocation : Direction;
         _currentMouseX, _currentMouseY : integer;
         _targetRoomContainsMonster, _isInEscapingMode : boolean;
+        _hud: THeadUpDisplay;
      public
         constructor Create(); overload;
         function RequireSwitch() : TSwitchInfo;
@@ -66,6 +68,20 @@ type
         property Character: ICharacter read _character;
   end;
 
+type
+  {$PACKENUM 1}
+  MonsterChasingStage = (DisplayWarning, Running, Escaped);
+
+type
+  TMonsterChasingInfo = class
+     private
+         var _currentStage : MonsterChasingStage;
+             _startTime : Int64;
+     public
+        constructor Create(startTime : Int64);
+        property CurrentStage: MonsterChasingStage read _currentStage;
+  end;
+
 implementation
 
 constructor TGameComposition.Create();
@@ -74,6 +90,8 @@ begin
     _lastCharacterUpdate := Now;
     _currentCharacterState := CharacterState.DefaultSouth;
     _currentCharacterMode := CharacterMode.Normal;
+    _hud:= THeadUpDisplay.create;
+
 end;
 
 procedure TGameComposition.Initialize(parameter : TObject);
@@ -92,6 +110,8 @@ begin
     _currentY := startRoom.Y;
 
     _currentRoom := GetRoomByCoordinates(_currentX, _currentY);
+    _hud.InitializeRooms(_rooms);
+    _hud.CurrentRoomChanged(_currentRoom);
 end;
 
 function TGameComposition.GetRoomByCoordinates(x, y : integer) : IRoom;
@@ -110,6 +130,7 @@ end;
 procedure TGameComposition.EnterRoom(room : IRoom);
 begin
    _currentRoom := room;
+   _hud.CurrentRoomChanged(room);
    room.EnterRoom();
 end;
 
@@ -258,6 +279,8 @@ begin
 
     if(_currentCharacterMode = CharacterMode.RunningFromDoor) then
        RedrawWall(GetOppositeDirection(_targetedLocation), roomBitmapLocation, roomImage, bitmap);
+
+    _hud.render(bitmap, deltaTime);
 
     if(freeRoomImage) then
        roomImage.Free();
@@ -453,6 +476,13 @@ constructor TGameCompositionInfo.Create(levelVal : ILevel; characterVal : IChara
 begin
    _level := levelVal;
    _character := characterVal;
+end;
+
+//TMonsterChasingInfo
+constructor TMonsterChasingInfo.Create(startTime : Int64);
+begin
+   _startTime := startTime;
+   _currentStage := MonsterChasingStage.DisplayWarning;
 end;
 
 end.
