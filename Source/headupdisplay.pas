@@ -25,8 +25,23 @@ var
 
 begin
    minX:= _rooms[0].GetLocation.x;
+   minY:= _rooms[0].GetLocation.y;
+   maxX:= _rooms[0].GetLocation.x;
+   maxY:= _rooms[0].GetLocation.y;
 
    for i:= 0 to length(_rooms)-1 do begin
+
+     if _rooms[i].GetLocation.x < minX then
+        minX:= _rooms[i].GetLocation.x;
+
+      if _rooms[i].GetLocation.y < minY then
+        minX:= _rooms[i].GetLocation.y;
+
+      if _rooms[i].GetLocation.x > maxX then
+        minX:= _rooms[i].GetLocation.x;
+
+      if _rooms[i].GetLocation.x > maxY then
+        minX:= _rooms[i].GetLocation.y;
 
    end;
 
