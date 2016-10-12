@@ -8,13 +8,22 @@ uses
   Classes, SysUtils, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelDesign;
 
 type
+  {$PACKENUM 1}
+  CurrentHeadUpDisplayStatus = (Normal, MonsterIsChasing);
+
+type
   THeadUpDisplay= class
      private
         _rooms: TRoomArray;
+        _currentStatus : CurrentHeadUpDisplayStatus;
+        _monsterTimeLeft : integer;
     public
        procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
        procedure InitializeRooms(rooms : TRoomArray);
        procedure CurrentRoomChanged(currentRoom : IRoom);
+
+       property CurrentStatus: CurrentHeadUpDisplayStatus read _currentStatus write _currentStatus;
+       property MonsterTimeLeft: integer read _monsterTimeLeft write _monsterTimeLeft;
   end;
 
 implementation

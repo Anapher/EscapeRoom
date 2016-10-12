@@ -8,15 +8,16 @@ interface
 uses
   Classes, SysUtils, BGRABitmap, LevelDesign, Controls, Storyboard, Math,
   LevelUtils, BGRABitmapTypes, BGRAGradients, LCLType, DateUtils, Objectives,
-  HeadUpDisplay;
+  HeadUpDisplay, GameEffectUtils;
 
 const
   CharacterMoveOutTime = 500;
   CharacterMoveInTime = 500;
+  TimeToEscapeFromMonster = 1000;
 
 type
   {$PACKENUM 1}
-  CharacterMode = (Normal, RunningToDoor, RunningFromDoor, Scared);
+  CharacterMode = (Normal, RunningToDoor, RunningFromDoor, Scared, RunAway);
 
 type
   TGameComposition = class(IComposition)
@@ -31,12 +32,14 @@ type
         _lastCharacterUpdate : TDateTime;
         _currentCharacterState : CharacterState;
         _currentCharacterMode : CharacterMode;
-        _currentCharacterProcessStartTime : TDateTime;
+        _currentCharacterProcessStartTime, _monsterRunningWithoutActions : TDateTime;
         _targetedRoom : IRoom;
         _targetedLocation : Direction;
         _currentMouseX, _currentMouseY : integer;
         _targetRoomContainsMonster, _isInEscapingMode : boolean;
-        _hud: THeadUpDisplay;
+        _hud : THeadUpDisplay;
+        _currentRoomWithMonster : TPoint;
+        _isRunningAway : boolean;
      public
         constructor Create(); overload;
         function RequireSwitch() : TSwitchInfo;
@@ -86,12 +89,8 @@ implementation
 
 constructor TGameComposition.Create();
 begin
-    _requestedSwitchInfo := nil;
-    _lastCharacterUpdate := Now;
-    _currentCharacterState := CharacterState.DefaultSouth;
-    _currentCharacterMode := CharacterMode.Normal;
+   _requestedSwitchInfo := nil;
     _hud:= THeadUpDisplay.create;
-
 end;
 
 procedure TGameComposition.Initialize(parameter : TObject);
@@ -109,9 +108,15 @@ begin
     _currentX := startRoom.X;
     _currentY := startRoom.Y;
 
+    _lastCharacterUpdate := Now;
+    _currentCharacterState := CharacterState.DefaultSouth;
+    _currentCharacterMode := CharacterMode.Normal;
+    _isRunningAway := false;
+
     _currentRoom := GetRoomByCoordinates(_currentX, _currentY);
     _hud.InitializeRooms(_rooms);
     _hud.CurrentRoomChanged(_currentRoom);
+    _hud.CurrentStatus := CurrentHeadUpDisplayStatus.Normal;
 end;
 
 function TGameComposition.GetRoomByCoordinates(x, y : integer) : IRoom;
@@ -136,7 +141,8 @@ end;
 
 function TGameComposition.RequireSwitch() : TSwitchInfo;
 begin
-    exit(_requestedSwitchInfo);
+    result := _requestedSwitchInfo;
+    _requestedSwitchInfo := nil;
 end;
 
 function TGameComposition.GetCompositionType() : CompositionType;
@@ -147,7 +153,7 @@ end;
 procedure TGameComposition.Render(bitmap : TBGRABitmap; deltaTime : Int64);
 var customDrawingRoom : ICustomDrawingRoom;
     characterImage : TBGRABitmap;
-    deltaCharacterMovement, shortestSide : integer;
+    deltaCharacterMovement, deltaMonsterEscapingTime, shortestSide : integer;
     doorLocation, centeredLocation, characterLocation : TPoint;
     roomBitmapLocation : TRectangle;
     characterSize : TSize;
@@ -210,6 +216,8 @@ begin
               end
               else begin
                    _currentCharacterMode := CharacterMode.Normal;
+                   if(_isRunningAway) then
+                      _monsterRunningWithoutActions := Now;
               end;
          end
          else begin
@@ -227,15 +235,6 @@ begin
            characterLocation := ComputeCharacterPositionLinear(doorLocation, centeredLocation,
                                                                deltaCharacterMovement - CharacterMoveOutTime, CharacterMoveInTime);
          end;
-    end;
-
-    if(_currentCharacterMode = CharacterMode.Scared) then begin
-         characterLocation := ComputeCharacterPositionLinear(GetDoorLocation(GetOppositeDirection(_targetedLocation), roomBitmapLocation), centeredLocation, round(CharacterMoveInTime / 2), CharacterMoveInTime);
-    end;
-
-    if(_currentCharacterMode = CharacterMode.Normal) then begin
-         //we just draw the character centered
-         characterLocation := centeredLocation;
     end;
 
     //First, we check if the room is a monster room
@@ -259,6 +258,41 @@ begin
 
     bitmap.StretchPutImage(RectWithSize(roomBitmapLocation.X,
                                      roomBitmapLocation.Y, roomBitmapLocation.Width, roomBitmapLocation.Height), roomImage, TDrawMode.dmDrawWithTransparency);
+
+    if((_currentCharacterMode = CharacterMode.Scared) or (_currentCharacterMode = CharacterMode.RunAway)) then begin
+         deltaCharacterMovement := MilliSecondsBetween(_currentCharacterProcessStartTime, Now);
+         if(deltaCharacterMovement > (round(CharacterMoveInTime / 2) + CharacterMoveOutTime)) then begin
+              if((_currentCharacterMode = CharacterMode.Scared) and (deltaCharacterMovement > CharacterMoveInTime + CharacterMoveOutTime + 500)) then begin //we give some time to run
+                  _hud.CurrentStatus := CurrentHeadUpDisplayStatus.MonsterIsChasing;
+                  _hud.MonsterTimeLeft := TimeToEscapeFromMonster;
+                  _currentRoomWithMonster := _currentRoom.GetLocation();
+                  _isRunningAway := true;
+                  _currentCharacterMode := CharacterMode.RunAway;
+                  _monsterRunningWithoutActions := Now;
+              end
+              else if (_currentCharacterMode = CharacterMode.Scared) then
+                  DrawCenteredText('RENN ZUM STARTPUNKT !!!', bitmap, BGRA(255,255,255, 170 - round(deltaCharacterMovement / ((CharacterMoveInTime + CharacterMoveOutTime + 500)) * 170)));
+              deltaCharacterMovement := round(CharacterMoveInTime / 2) + CharacterMoveOutTime; //we stop at half
+         end;
+         characterLocation := ComputeCharacterPositionLinear(GetDoorLocation(GetOppositeDirection(_targetedLocation), roomBitmapLocation), centeredLocation, deltaCharacterMovement - CharacterMoveOutTime, CharacterMoveInTime);
+    end;
+
+    if(_isRunningAway) then begin
+        if((_currentRoom.GetLocation().X = _currentLevel.GetSecureArea().X) and (_currentRoom.GetLocation().Y = _currentLevel.GetSecureArea().Y)) then begin
+           _isRunningAway := false;
+           _hud.CurrentStatus := CurrentHeadUpDisplayStatus.Normal;
+        end;
+        deltaMonsterEscapingTime := MilliSecondsBetween(_monsterRunningWithoutActions, Now);
+        _hud.MonsterTimeLeft := deltaMonsterEscapingTime;
+        if(((_currentCharacterMode = CharacterMode.Normal) or (_currentCharacterMode = CharacterMode.RunAway)) and (deltaMonsterEscapingTime > TimeToEscapeFromMonster)) then begin
+           _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Dead, nil);
+        end;
+    end;
+
+    if(_currentCharacterMode = CharacterMode.Normal) then begin
+         //we just draw the character centered
+         characterLocation := centeredLocation;
+    end;
 
     //we draw the character
     characterImage := _character.Render(_currentCharacterState, MilliSecondsBetween(_lastCharacterUpdate, Now));
@@ -384,7 +418,7 @@ var newRoom : IRoom;
     currentRoomLocation : TPoint;
 begin
     //if the level wants the control locked or the character is currently moving, we deny to handle this key
-    if(_currentLevel.GetIsControlLocked() or (_currentCharacterMode <> CharacterMode.Normal)) then
+    if(_currentLevel.GetIsControlLocked() or ((_currentCharacterMode <> CharacterMode.Normal) and (_currentCharacterMode <> CharacterMode.RunAway))) then
        exit;
 
     currentRoomLocation := _currentRoom.GetLocation();
@@ -440,6 +474,15 @@ end;
 procedure TGameComposition.SetTargetRoom(newRoom : IRoom; roomDirection : Direction);
 var monsterRoom : IMonsterRoom;
 begin
+   if(_currentCharacterMode = CharacterMode.RunAway) then begin
+      if((newRoom.GetLocation().X = _currentRoomWithMonster.X) and (newRoom.GetLocation().Y = _currentRoomWithMonster.Y)) then begin
+         _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Dead, nil);
+         exit(); //if the player wants to go back to the room with the monster, he's dead
+      end;
+
+      _currentRoomWithMonster := newRoom.GetLocation();
+   end;
+
     _currentCharacterMode := CharacterMode.RunningToDoor;
     _targetedLocation := roomDirection;
     _targetedRoom := newRoom;
@@ -459,6 +502,7 @@ begin
 
     _currentCharacterProcessStartTime := Now;
     _lastCharacterUpdate := Now;
+
 end;
 
 procedure TGameComposition.MouseMove(Shift: TShiftState; X, Y: Integer);

@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, ExtCtrls, LevelDesign, MenuComposition, GameComposition,
   IntroComposition, Controls, Forms, Graphics, BGRABitmap, BGRABitmapTypes,
-  BGRAGradients, DateUtils;
+  BGRAGradients, DateUtils, DeadComposition;
 
 const
   FramesPerSecond = 25;
@@ -90,6 +90,8 @@ begin
            newComposition := TMenuComposition.Create();
          CompositionType.Game:
            newComposition := TGameComposition.Create();
+         CompositionType.Dead:
+           newComposition := TDeadComposition.Create();
      end;
 
      //search free space

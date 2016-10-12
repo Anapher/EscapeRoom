@@ -54,7 +54,8 @@ end;
 
 function TMenuComposition.RequireSwitch() : TSwitchInfo;
 begin
-    exit(_requestedSwitchInfo);
+    result := _requestedSwitchInfo;
+    _requestedSwitchInfo := nil;
 end;
 
 function TMenuComposition.GetCompositionType() : CompositionType;
