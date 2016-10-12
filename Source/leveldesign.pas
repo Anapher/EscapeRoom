@@ -6,7 +6,7 @@ unit LevelDesign;
 interface
 
 uses
-  Classes, SysUtils, LevelUtils, BGRABitmap, Controls, Objectives;
+  Classes, SysUtils, LevelUtils, BGRABitmap, Controls;
 
 const
   InjectionGuid = '229c7657-a84e-4a27-8345-52f1f2ca04df';
@@ -150,7 +150,97 @@ type
         _collectedArray : array of boolean;
   end;
 
+type
+  TStandardRoom = class(TInterfacedObject, IRoom, ICustomDrawingRoom)
+     public
+        constructor Create(location : TPoint; roomImagePath : string);
+        procedure EnterRoom();
+        function GetExtendedExits() : TSpecialExitArray;
+        function GetLocation() : TPoint;
+        function Draw() : TBGRABitmap;
+     private
+        _location : TPoint;
+        _roomImage : TBGRABitmap;
+  end;
+
+type
+  TStandardMonsterRoom = class(TInterfacedObject, ICustomDrawingRoom, IRoom, IMonsterRoom)
+     public
+        constructor Create(location : TPoint; roomImagePath, roomWithMonsterImagePath : string);
+        procedure EnterRoom();
+        function GetExtendedExits() : TSpecialExitArray;
+        function GetLocation() : TPoint;
+        function Draw() : TBGRABitmap;
+        function DrawWithMonster() : TBGRABitmap;
+        function ContainsMonster() : boolean;
+     private
+        var _normalBitmap, _monsterBitmap : TBGRABitmap;
+            _location : TPoint;
+  end;
+
 implementation
+
+constructor TStandardMonsterRoom.Create(location : TPoint; roomImagePath, roomWithMonsterImagePath : string);
+begin
+   _normalBitmap := TBGRABitmap.Create(roomImagePath);
+   _monsterBitmap := TBGRABitmap.Create(roomWithMonsterImagePath);
+   _location := location;
+end;
+
+procedure TStandardMonsterRoom.EnterRoom();
+begin
+
+end;
+
+function TStandardMonsterRoom.GetExtendedExits() : TSpecialExitArray;
+begin
+   exit(nil);
+end;
+
+function TStandardMonsterRoom.GetLocation() : TPoint;
+begin
+   exit(_location);
+end;
+
+function TStandardMonsterRoom.Draw() : TBGRABitmap;
+begin
+   exit(_normalBitmap);
+end;
+
+function TStandardMonsterRoom.DrawWithMonster() : TBGRABitmap;
+begin
+   exit(_monsterBitmap);
+end;
+
+function TStandardMonsterRoom.ContainsMonster() : boolean;
+begin
+   exit(true);
+end;
+
+constructor TStandardRoom.Create(location : TPoint; roomImagePath : string);
+begin
+   _location := location;
+   _roomImage := TBGRABitmap.Create(roomImagePath);
+end;
+
+procedure TStandardRoom.EnterRoom();
+begin
+end;
+
+function TStandardRoom.GetExtendedExits() : TSpecialExitArray;
+begin
+   exit(nil);
+end;
+
+function TStandardRoom.GetLocation() : TPoint;
+begin
+   exit(_location);
+end;
+
+function TStandardRoom.Draw() : TBGRABitmap;
+begin
+   exit(_roomImage);
+end;
 
 constructor TSwitchInfo.Create(compositionVal : CompositionType; parameterVal : TObject);
 begin

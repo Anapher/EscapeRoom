@@ -256,7 +256,7 @@ begin
         freeRoomImage := true;
         DrawObjectives(objectiveRoom, roomImage, roomBitmapLocation);
         _roomImageLocation := roomBitmapLocation;
-        _defaultRoomSize := TSize.Create(bitmap.Width, bitmap.Height);
+        _defaultRoomSize := TSize.Create(roomImage.Width, roomImage.Height);
     end;
 
     bitmap.StretchPutImage(RectWithSize(roomBitmapLocation.X,
@@ -518,6 +518,7 @@ procedure TGameComposition.MouseDown(Button: TMouseButton; Shift: TShiftState; X
 var relativeMouseX, relativeMouseY : Integer;
     room : IObjectiveRoom;
     objective : TObjective;
+    xa, ya : integer;
 begin
    if(not Supports(_currentRoom, IObjectiveRoom, room)) then
       exit;
@@ -526,6 +527,8 @@ begin
    relativeMouseY := round((Y - _roomImageLocation.Y) * (_defaultRoomSize.Height / _roomImageLocation.Height));
 
    for objective in room.GetObjectives() do begin
+      xa := objective.Location.X;
+      ya := objective.Location.Y;
       if((relativeMouseX > objective.Location.X) and (relativeMouseX < objective.Location.X + objective.Location.Width) and
          (relativeMouseY > objective.Location.Y) and (relativeMouseY < objective.Location.Y + objective.Location.Height)) then begin
              room.ObjectiveCollected(objective);

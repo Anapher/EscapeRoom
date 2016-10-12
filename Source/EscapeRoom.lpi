@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="17">
+    <Units Count="16">
       <Unit0>
         <Filename Value="EscapeRoom.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -62,65 +62,60 @@
         <UnitName Value="LevelUtils"/>
       </Unit4>
       <Unit5>
-        <Filename Value="objectives.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="Objectives"/>
-      </Unit5>
-      <Unit6>
         <Filename Value="specialexits.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SpecialExits"/>
-      </Unit6>
-      <Unit7>
+      </Unit5>
+      <Unit6>
         <Filename Value="gamecomposition.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="GameComposition"/>
-      </Unit7>
-      <Unit8>
+      </Unit6>
+      <Unit7>
         <Filename Value="menucomposition.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="MenuComposition"/>
-      </Unit8>
-      <Unit9>
+      </Unit7>
+      <Unit8>
         <Filename Value="introcomposition.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="IntroComposition"/>
-      </Unit9>
-      <Unit10>
+      </Unit8>
+      <Unit9>
         <Filename Value="gameeffectutils.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="GameEffectUtils"/>
-      </Unit10>
-      <Unit11>
+      </Unit9>
+      <Unit10>
         <Filename Value="storyboard.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Storyboard"/>
-      </Unit11>
-      <Unit12>
+      </Unit10>
+      <Unit11>
         <Filename Value="drawableuielements.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="DrawableUiElements"/>
-      </Unit12>
-      <Unit13>
+      </Unit11>
+      <Unit12>
         <Filename Value="tutoriallevel.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="TutorialLevel"/>
-      </Unit13>
-      <Unit14>
+      </Unit12>
+      <Unit13>
         <Filename Value="charactersoldier.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="CharacterSoldier"/>
-      </Unit14>
-      <Unit15>
+      </Unit13>
+      <Unit14>
         <Filename Value="headupdisplay.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="HeadUpDisplay"/>
-      </Unit15>
-      <Unit16>
+      </Unit14>
+      <Unit15>
         <Filename Value="deadcomposition.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="DeadComposition"/>
-      </Unit16>
+      </Unit15>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
