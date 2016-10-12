@@ -40,6 +40,8 @@ type
         _hud : THeadUpDisplay;
         _currentRoomWithMonster : TPoint;
         _isRunningAway : boolean;
+        _roomImageLocation : TRectangle;
+        _defaultRoomSize : TSize;
      public
         constructor Create(); overload;
         function RequireSwitch() : TSwitchInfo;
@@ -249,11 +251,12 @@ begin
     else
        roomImage := _currentLevel.DrawDefaultRoom(_currentRoom) as TBGRACustomBitmap; //if no, the level should draw it
 
-
     if (Supports(_currentRoom, IObjectiveRoom, objectiveRoom)) then begin
         roomImage := roomImage.Duplicate(); //we must duplicate the image because DrawObjectives draws on it and the room always returns the same bitmap
         freeRoomImage := true;
         DrawObjectives(objectiveRoom, roomImage, roomBitmapLocation);
+        _roomImageLocation := roomBitmapLocation;
+        _defaultRoomSize := TSize.Create(bitmap.Width, bitmap.Height);
     end;
 
     bitmap.StretchPutImage(RectWithSize(roomBitmapLocation.X,
@@ -314,7 +317,7 @@ begin
     if(_currentCharacterMode = CharacterMode.RunningFromDoor) then
        RedrawWall(GetOppositeDirection(_targetedLocation), roomBitmapLocation, roomImage, bitmap);
 
-    _hud.render(bitmap, deltaTime);
+    _hud.Render(bitmap, deltaTime);
 
     if(freeRoomImage) then
        roomImage.Free();
@@ -512,8 +515,24 @@ begin
 end;
 
 procedure TGameComposition.MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var relativeMouseX, relativeMouseY : Integer;
+    room : IObjectiveRoom;
+    objective : TObjective;
 begin
+   if(not Supports(_currentRoom, IObjectiveRoom, room)) then
+      exit;
 
+   relativeMouseX := round((X - _roomImageLocation.X) * (_defaultRoomSize.Width / _roomImageLocation.Width));
+   relativeMouseY := round((Y - _roomImageLocation.Y) * (_defaultRoomSize.Height / _roomImageLocation.Height));
+
+   for objective in room.GetObjectives() do begin
+      if((relativeMouseX > objective.Location.X) and (relativeMouseX < objective.Location.X + objective.Location.Width) and
+         (relativeMouseY > objective.Location.Y) and (relativeMouseY < objective.Location.Y + objective.Location.Height)) then begin
+             room.ObjectiveCollected(objective);
+             _hud.ItemPickedUp(objective);
+             exit;
+      end;
+   end;
 end;
 
 constructor TGameCompositionInfo.Create(levelVal : ILevel; characterVal : ICharacter);

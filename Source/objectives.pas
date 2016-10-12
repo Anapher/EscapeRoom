@@ -7,45 +7,16 @@ interface
 uses
   Classes, SysUtils, LevelUtils, BGRABitmap, BGRABitmapTypes;
 
-type
-  TObjective = class
-    private
-      _location : TRectangle;
-      _objectiveId, _normalImagePath, _hoveredImagePath : string;
-      _cachedNormalImage, _cachedHoveredImage : TBGRABitmap;
-    public
-      constructor Create(objectiveIdVal : string; locationVal : TRectangle; normalImagePath, hoveredImagePath : string);
-      property Location: TRectangle read _location;
-      property ObjectiveId: string read _objectiveId;
+const
+  InjectionGuid = '229c7657-a84e-4a27-8345-52f1f2ca04df';
+  CharacterMoveInTime = 500;
+  TimeToEscapeFromMonster = 1000;
 
-      function GetObjectiveImage(mouseOver : boolean) : TBGRABitmap;
-  end;
+
 
 implementation
 
-constructor TObjective.Create(objectiveIdVal : string; locationVal : TRectangle; normalImagePath, hoveredImagePath : string);
-begin
-    _objectiveId := objectiveIdVal;
-    _location := locationVal;
-    _normalImagePath := normalImagePath;
-    _hoveredImagePath := hoveredImagePath;
-end;
 
-function TObjective.GetObjectiveImage(mouseOver : boolean) : TBGRABitmap;
-begin
-   if(not mouseOver) then begin
-      if(_cachedNormalImage = nil) then
-         _cachedNormalImage := TBGRABitmap.Create(_normalImagePath);
-      exit(_cachedNormalImage);
-   end
-   else begin
-     if(_cachedHoveredImage = nil) then
-        _cachedHoveredImage := TBGRABitmap.Create(_hoveredImagePath);
-
-     exit(_cachedHoveredImage);
-   end;
-
-end;
 
 end.
 

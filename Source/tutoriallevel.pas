@@ -52,18 +52,15 @@ type
   end;
 
 type
-  TCorridorRoom = class(TInterfacedObject, ICustomDrawingRoom, IObjectiveRoom, IRoom)
+  TCorridorRoom = class(TObjectiveRoom, ICustomDrawingRoom, IObjectiveRoom)
      public
         constructor Create();
         procedure EnterRoom();
-        function GetExtendedExits() : TSpecialExitArray;
+        function GetExtendedExits() : TSpecialExitArray; override;
         function Draw() : TBGRABitmap;
-        function GetLocation() : TPoint;
-        function GetObjectives() : TObjectiveArray;
-        procedure ObjectiveCollected(objective : TObjective);
+        function GetLocation() : TPoint; override;
      private
         var _normalBitmap : TBGRABitmap;
-            _injection1, _injection2 : TObjective;
   end;
 
 type
@@ -219,10 +216,10 @@ end;
 constructor TCorridorRoom.Create();
 begin
     _normalBitmap := TBGRABitmap.Create('resources\levels\tutorial\corridorRoom.png', false);
-    _injection1 := TObjective.Create('229c7657-a84e-4a27-8345-52f1f2ca04df', TRectangle.Create(210, 514, 37, 92),
-                                     'resources\levels\tutorial\injection1.png', 'resources\levels\tutorial\injection1_hover.png');
-    _injection2 := TObjective.Create('229c7657-a84e-4a27-8345-52f1f2ca04df', TRectangle.Create(205, 526, 73, 43),
-                                     'resources\levels\tutorial\injection2.png', 'resources\levels\tutorial\injection2_hover.png');
+    AddObjective(TObjective.Create('229c7657-a84e-4a27-8345-52f1f2ca04df', TRectangle.Create(210, 514, 37, 92),
+                                     'resources\levels\tutorial\injection1.png', 'resources\levels\tutorial\injection1_hover.png', 'resources\items\injection.png'));
+    AddObjective(TObjective.Create('229c7657-a84e-4a27-8345-52f1f2ca04df', TRectangle.Create(205, 526, 73, 43),
+                                     'resources\levels\tutorial\injection2.png', 'resources\levels\tutorial\injection2_hover.png', 'resources\items\injection.png'));
 end;
 
 procedure TCorridorRoom.EnterRoom();
@@ -242,18 +239,6 @@ end;
 function TCorridorRoom.GetLocation() : TPoint;
 begin
    exit(TPoint.Create(1, 0));
-end;
-
-function TCorridorRoom.GetObjectives() : TObjectiveArray;
-var resultArray : array[0..1] of TObjective;
-begin
-   resultArray[0] := _injection1;
-   resultArray[1] := _injection2;
-   exit(resultArray);
-end;
-
-procedure TCorridorRoom.ObjectiveCollected(objective : TObjective);
-begin
 end;
 
 constructor TMonsterRoom1.Create();

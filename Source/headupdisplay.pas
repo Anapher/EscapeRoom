@@ -5,7 +5,7 @@ unit  HeadUpDisplay;
 interface
 
 uses
-  Classes, SysUtils, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelDesign;
+  Classes, SysUtils, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelDesign, Objectives;
 
 type
   {$PACKENUM 1}
@@ -21,6 +21,7 @@ type
        procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
        procedure InitializeRooms(rooms : TRoomArray);
        procedure CurrentRoomChanged(currentRoom : IRoom);
+       procedure ItemPickedUp(item : TObjective);
 
        property CurrentStatus: CurrentHeadUpDisplayStatus read _currentStatus write _currentStatus;
        property MonsterTimeLeft: integer read _monsterTimeLeft write _monsterTimeLeft;
@@ -64,6 +65,11 @@ begin
   end;
 
 procedure THeadUpDisplay.CurrentRoomChanged(currentRoom : IRoom);
+begin
+
+end;
+
+procedure THeadUpDisplay.ItemPickedUp(item : TObjective);
 begin
 
 end;
