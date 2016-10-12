@@ -5,7 +5,7 @@ unit  HeadUpDisplay;
 interface
 
 uses
-  Classes, SysUtils, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelDesign, Objectives;
+  Classes, SysUtils, math, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelUtils, LevelDesign, Objectives;
 
 type
   {$PACKENUM 1}
@@ -14,9 +14,11 @@ type
 type
   THeadUpDisplay= class
      private
+        var
         _rooms: TRoomArray;
         _currentStatus : CurrentHeadUpDisplayStatus;
         _monsterTimeLeft : integer;
+
     public
        procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
        procedure InitializeRooms(rooms : TRoomArray);
@@ -32,6 +34,11 @@ implementation
 procedure THeadUpDisplay.Render(bitmap : TBGRABitmap; deltaTime : Int64);
 var
   i, maxX, minX, maxY, minY: integer;
+  mapLocation: TRectangle;
+  roomWidth,roomHeight: integer;
+  numberRoomsX, numberRoomsY: integer;
+  sortedRoomsX, sortedRoomsY : TRoomArray;
+  newX, newY: integer;
 
 begin
    minX:= _rooms[0].GetLocation.x;
@@ -39,21 +46,46 @@ begin
    maxX:= _rooms[0].GetLocation.x;
    maxY:= _rooms[0].GetLocation.y;
 
-   for i:= 0 to length(_rooms)-1 do begin
+   for i:= 1 to length(_rooms)-1 do begin
 
      if _rooms[i].GetLocation.x < minX then
         minX:= _rooms[i].GetLocation.x;
 
       if _rooms[i].GetLocation.y < minY then
-        minX:= _rooms[i].GetLocation.y;
+        minY:= _rooms[i].GetLocation.y;
 
       if _rooms[i].GetLocation.x > maxX then
-        minX:= _rooms[i].GetLocation.x;
+        maxX:= _rooms[i].GetLocation.x;
 
       if _rooms[i].GetLocation.x > maxY then
-        minX:= _rooms[i].GetLocation.y;
+        maxY:= _rooms[i].GetLocation.y;
 
    end;
+
+  mapLocation:= Trectangle.create(round(0.02*bitmap.width) ,
+                bitmap.height - (round(0.32 * bitmap.height)),
+                round(0.25 * bitmap.width),
+                round(0.3 * bitmap.height));
+
+  bitmap.rectangle(mapLocation.x, mapLocation.y,
+                mapLocation.x+mapLocation.width,
+                mapLocation.y+mapLocation.height,BGRA(255,255,255,125),
+                TDrawMode.dmDrawWithTransparency);
+
+  numberRoomsX:= maxX - minX;
+  numberRoomsY:= maxY - minY;
+
+  roomWidth:= round(mapLocation.width / numberRoomsX);
+  roomHeight:= round(mapLocation.height / numberRoomsY);
+
+  for i:= 0 to length(_rooms)-1 do begin
+           newX:= maplocation.x+(_rooms[i].GetLocation.x-minX) * roomWidth;
+           newY:= mapLocation.y+(_rooms[i].Getlocation.y-minY) * roomHeight;
+           bitmap.Rectangle(newX,newY,newX+roomWidth,newY+roomHeight,BGRA(0,0,0,200),
+                TDrawMode.dmDrawWithTransparency);
+
+  end;
+
 
 
 end;
@@ -73,6 +105,7 @@ procedure THeadUpDisplay.ItemPickedUp(item : TObjective);
 begin
 
 end;
+
 
 end.
 
