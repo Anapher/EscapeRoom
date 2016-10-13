@@ -203,8 +203,15 @@ begin
 end;
 
 function TCorridorRoom.GetExtendedExits() : TSpecialExitArray;
+var specialExits : array[0..0] of ISpecialExit;
+    lockPickExit : TLockPickExit;
 begin
-    exit(nil);
+   lockPickExit := TLockPickExit.Create(Direction.Top);
+   lockPickExit.Bolts := 8;
+   lockPickExit.Tries := 10;
+   specialExits[0] := lockPickExit;
+   //specialExits[0] := TLockPickExit.Create(Direction.Left, 0, 0);
+   exit(specialExits);
 end;
 
 function TCorridorRoom.Draw() : TBGRABitmap;
@@ -230,7 +237,7 @@ begin
 end;
 
 function TKeyRoom.GetExtendedExits() : TSpecialExitArray;
-var specialExits : array[0..1] of ISpecialExit;
+var specialExits : array[0..0] of ISpecialExit;
 begin
     specialExits[0] := TNoExit.Create(Direction.Bottom);
     exit(specialExits);
@@ -247,7 +254,7 @@ begin
 end;
 
 function TRoomNoExitAtTop.GetExtendedExits() : TSpecialExitArray;
-var specialExits : array[0..1] of ISpecialExit;
+var specialExits : array[0..0] of ISpecialExit;
 begin
     specialExits[0] := TNoExit.Create(Direction.Top);
     exit(specialExits);

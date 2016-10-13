@@ -21,7 +21,7 @@ type
 
 type
   {$PACKENUM 1}
-  CompositionType = (None, Intro, Menu, Game, DoorUnlocking, OffScreen, Dead, LevelCompleted);
+  CompositionType = (None, Intro, Menu, Game, DoorUnlocking, OffScreen, Dead, LevelCompleted, LockPick);
 
 type
   {$PACKENUM 1}

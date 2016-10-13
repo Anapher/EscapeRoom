@@ -8,7 +8,7 @@ interface
 uses
   Classes, SysUtils, BGRABitmap, LevelDesign, Controls, Storyboard, Math,
   LevelUtils, BGRABitmapTypes, BGRAGradients, LCLType, DateUtils,
-  HeadUpDisplay, GameEffectUtils, SpecialExits;
+  HeadUpDisplay, GameEffectUtils, SpecialExits, LockPickComposition;
 
 const
   CharacterMoveOutTime = 500;
@@ -456,6 +456,7 @@ var newRoom : IRoom;
     specialExits : TSpecialExitArray;
     specialExit : ISpecialExit;
     lockedExit : TLockedExit;
+    lockPickExit : TLockPickExit;
 begin
    specialExits := _currentRoom.GetExtendedExits();
    if (specialExits <> nil) then
@@ -470,6 +471,10 @@ begin
             if(Supports(specialExit, TLockedExit, lockedExit) and (not lockedExit.GetExitPassed())) then begin
                if(not _hud.GetInventoryItemWithId(lockedExit.ObjectiveId)) then
                   exit;
+            end;
+            if(Supports(specialExit, TLockPickExit, lockPickExit) and (not lockPickExit.GetExitPassed())) then begin
+               _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.LockPick, TLockPickInfo.Create(lockPickExit.Tries, lockPickExit.Bolts));
+               exit;
             end;
          end;
       end;

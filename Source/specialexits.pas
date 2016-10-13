@@ -39,6 +39,12 @@ type
 
 type
   TLockPickExit = class(TSpecialExitBase)
+    private
+       _bolts, _tries : integer;
+    public
+       procedure Create(exitPosition : Direction; boltsVal, triesVal : integer); overload;
+       property Bolts: integer read _bolts write _bolts;
+       property Tries: integer read _tries write _tries;
   end;
 
 type
@@ -84,6 +90,14 @@ constructor TLockedExit.Create(exitPosition : Direction; objectiveId : string);
 begin
     inherited Create(exitPosition);
     _objectiveId := objectiveId;
+end;
+
+//LockPick
+procedure TLockPickExit.Create(exitPosition : Direction; boltsVal, triesVal : integer);
+begin
+    inherited Create(exitPosition);
+   _bolts := boltsVal;
+   _tries := triesVal;
 end;
 
 end.
