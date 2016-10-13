@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LevelDesign, LevelUtils, SpecialExits, BGRABitmap,
-  BGRABitmapTypes, BGRAGradients, Storyboard, Objectives;
+  BGRABitmapTypes, BGRAGradients, Storyboard;
 
 type
   TTutorialLevel = class(ILevel)

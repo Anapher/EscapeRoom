@@ -7,7 +7,7 @@ interface
 
 uses
   Classes, SysUtils, BGRABitmap, LevelDesign, Controls, Storyboard, Math,
-  LevelUtils, BGRABitmapTypes, BGRAGradients, LCLType, DateUtils, Objectives,
+  LevelUtils, BGRABitmapTypes, BGRAGradients, LCLType, DateUtils,
   HeadUpDisplay, GameEffectUtils;
 
 const
@@ -119,6 +119,7 @@ begin
     _hud.InitializeRooms(_rooms);
     _hud.CurrentRoomChanged(_currentRoom);
     _hud.CurrentStatus := CurrentHeadUpDisplayStatus.Normal;
+    _hud.SecureRoomLocation := _currentLevel.GetSecureArea();
 end;
 
 function TGameComposition.GetRoomByCoordinates(x, y : integer) : IRoom;
@@ -187,6 +188,7 @@ begin
             _currentCharacterMode := CharacterMode.RunningFromDoor;
             _currentRoom := _targetedRoom;
             _targetedRoom := nil;
+            _hud.CurrentRoomChanged(_currentRoom);
          end
          else begin
             doorLocation := GetDoorLocation(_targetedLocation, roomBitmapLocation);
