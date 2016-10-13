@@ -83,10 +83,14 @@ begin
 
 
   for i:= 0 to length(_rooms)-1 do begin
+
+
      if _visitedRooms[i]=true then begin
 
            newX:= maplocation.x+(_rooms[i].GetLocation.x-minX) * roomWidth;
            newY:= mapLocation.y-roomHeight+(mapLocation.Height - (_rooms[i].Getlocation.y-minY) * roomHeight);
+
+           if _CurrentStatus <> CurrentHeadUpDisplayStatus.MonsterIsChasing then begin
 
            if ((_rooms[i].GetLocation().X = _LocationCurrentRoom.GetLocation().X) and (_rooms[i].GetLocation().Y = _LocationCurrentRoom.GetLocation.Y)) then begin
               bitmap.FillRect(newX,newY, newX+roomWidth,newY+roomHeight,BGRA(0,0,200,255),
@@ -103,6 +107,8 @@ begin
 
             bitmap.Rectangle(newX,newY,newX+roomWidth,newY+roomHeight,BGRA(125,125,125,255),
                 TDrawMode.dmSet);
+     end;
+
      end;
 
   end;
