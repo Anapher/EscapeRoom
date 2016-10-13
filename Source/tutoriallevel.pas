@@ -64,6 +64,11 @@ type
         var _normalBitmap : TBGRABitmap;
   end;
 
+type
+  TRoomNoExitAtTop = class(TStandardRoom)
+      function GetExtendedExits() : TSpecialExitArray; override;
+  end;
+
 implementation
 
 constructor TTutorialLevel.Create();
@@ -88,7 +93,7 @@ begin
     roomArray[0] := TStartRoom.Create();
     roomArray[1] := TCorridorRoom.Create();
     roomArray[2] := TStandardMonsterRoom.Create(TPoint.Create(1, -1), 'resources\levels\tutorial\monsterRoom1_wm.png', 'resources\levels\tutorial\monsterRoom1.png');
-    roomArray[3] := TStandardRoom.Create(TPoint.Create(2, 0), 'resources\levels\tutorial\2_0.png');
+    roomArray[3] := TRoomNoExitAtTop.Create(TPoint.Create(2, 0), 'resources\levels\tutorial\2_0.png');
     roomArray[4] := TStandardRoom.Create(TPoint.Create(1, 1), 'resources\levels\tutorial\1_1.png');
     roomArray[5] := TStandardMonsterRoom.Create(TPoint.Create(1, 2), 'resources\levels\tutorial\monsterRoom2_wm.png', 'resources\levels\tutorial\monsterRoom2.png');
     roomArray[6] := TKeyRoom.Create();
@@ -225,8 +230,10 @@ begin
 end;
 
 function TKeyRoom.GetExtendedExits() : TSpecialExitArray;
+var specialExits : array[0..1] of ISpecialExit;
 begin
-    exit(nil);
+    specialExits[0] := TNoExit.Create(Direction.Bottom);
+    exit(specialExits);
 end;
 
 function TKeyRoom.Draw() : TBGRABitmap;
@@ -237,6 +244,13 @@ end;
 function TKeyRoom.GetLocation() : TPoint;
 begin
    exit(TPoint.Create(2, 1));
+end;
+
+function TRoomNoExitAtTop.GetExtendedExits() : TSpecialExitArray;
+var specialExits : array[0..1] of ISpecialExit;
+begin
+    specialExits[0] := TNoExit.Create(Direction.Top);
+    exit(specialExits);
 end;
 
 end.

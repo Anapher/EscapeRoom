@@ -21,14 +21,15 @@ type
 
 type
   {$PACKENUM 1}
-  CompositionType = (None, Intro, Menu, Game, DoorUnlocking, OffScreen, Dead);
+  CompositionType = (None, Intro, Menu, Game, DoorUnlocking, OffScreen, Dead, LevelCompleted);
 
 type
   {$PACKENUM 1}
   CharacterState = (DefaultNorth, DefaultEast, DefaultSouth, DefaultWest, RunningNorth, RunningEast, RunningSouth, RunningWest);
 
 type
-  ISpecialExit = interface
+  ISpecialExit = interface(IInterface)
+  ['{b45dfaed-56f0-4746-b7e0-7b4938af9522}']
       function GetExitPosition() : Direction;
       procedure SetExitPassed();
       function GetExitPassed() : boolean;
@@ -153,11 +154,11 @@ type
 type
   TStandardRoom = class(TInterfacedObject, IRoom, ICustomDrawingRoom)
      public
-        constructor Create(location : TPoint; roomImagePath : string);
-        procedure EnterRoom();
-        function GetExtendedExits() : TSpecialExitArray;
-        function GetLocation() : TPoint;
-        function Draw() : TBGRABitmap;
+        constructor Create(location : TPoint; roomImagePath : string); virtual;
+        procedure EnterRoom(); virtual;
+        function GetExtendedExits() : TSpecialExitArray; virtual;
+        function GetLocation() : TPoint; virtual;
+        function Draw() : TBGRABitmap; virtual;
      private
         _location : TPoint;
         _roomImage : TBGRABitmap;

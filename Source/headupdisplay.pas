@@ -26,6 +26,7 @@ type
        procedure InitializeRooms(rooms : TRoomArray);
        procedure CurrentRoomChanged(currentRoom : IRoom);
        procedure ItemPickedUp(item : TObjective);
+       function GetInventoryItemWithId(id : string) : boolean;
 
        property CurrentStatus: CurrentHeadUpDisplayStatus read _currentStatus write _currentStatus;
        property MonsterTimeLeft: integer read _monsterTimeLeft write _monsterTimeLeft;
@@ -144,6 +145,10 @@ begin
 
 end;
 
-
+function THeadUpDisplay.GetInventoryItemWithId(id : string) : boolean;
+begin
+   //TODO: Check if the item exits in the current inventory, if yes, remove it and return true, else return false
+   exit(false);
+end;
 end.
 

@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, LevelDesign;
 
 type
-  TSpecialExitBase = class abstract(ISpecialExit)
+  TSpecialExitBase = class abstract(TInterfacedObject, ISpecialExit)
     protected
        _exitPosition : Direction;
        _isPassed : boolean;
@@ -45,6 +45,9 @@ type
   TLevelCompletedExit = class(TSpecialExitBase)
   end;
 
+type
+  TNoExit = class(TSpecialExitBase)
+  end;
 implementation
 
 //SpecialExitBase

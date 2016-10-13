@@ -42,7 +42,7 @@ begin
 
     SetLength(_buttons, 3);
 
-    _buttons[0] := TDrawableButton.Create('Starten', 0);
+    _buttons[0] := TDrawableButton.Create('Tutorial starten', 0);
     _buttons[1] := TDrawableButton.Create('Level wählen', 1);
     _buttons[2] := TDrawableButton.Create('Beenden', 2);
 end;

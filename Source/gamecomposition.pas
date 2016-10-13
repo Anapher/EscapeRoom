@@ -8,7 +8,7 @@ interface
 uses
   Classes, SysUtils, BGRABitmap, LevelDesign, Controls, Storyboard, Math,
   LevelUtils, BGRABitmapTypes, BGRAGradients, LCLType, DateUtils,
-  HeadUpDisplay, GameEffectUtils;
+  HeadUpDisplay, GameEffectUtils, SpecialExits;
 
 const
   CharacterMoveOutTime = 500;
@@ -56,6 +56,7 @@ type
         procedure RedrawWall(wallDirection : Direction; mapLocation : TRectangle; roomBitmap, bitmap : TBGRACustomBitmap);
         procedure SetTargetRoom(newRoom : IRoom; roomDirection : Direction);
         function GetDoorLocation(location : Direction; roomBitmapLocation : TRectangle) : TPoint;
+        procedure AttemptToWalk(targetDirection : Direction);
 
         procedure KeyDown(var Key: Word; Shift: TShiftState);
         procedure MouseMove(Shift: TShiftState; X, Y: Integer);
@@ -419,61 +420,77 @@ begin
 end;
 
 procedure TGameComposition.KeyDown(var Key: Word; Shift: TShiftState);
-var newRoom : IRoom;
-    currentRoomLocation : TPoint;
 begin
     //if the level wants the control locked or the character is currently moving, we deny to handle this key
     if(_currentLevel.GetIsControlLocked() or ((_currentCharacterMode <> CharacterMode.Normal) and (_currentCharacterMode <> CharacterMode.RunAway))) then
        exit;
 
-    currentRoomLocation := _currentRoom.GetLocation();
     //move character right
     if((Key = VK_Right) or (Key = VK_D)) then begin
-         //we get the room which is left to ours
-         newRoom := GetRoomByCoordinates(currentRoomLocation.X + 1, currentRoomLocation.Y);
-         //if there isn't a room, we just return
-         if(newRoom = nil) then
-            exit;
-
-         SetTargetRoom(newRoom, Direction.Right);
+         AttemptToWalk(Direction.Right);
          exit;
     end;
 
     //move left
     if((Key = VK_Left) or (Key = VK_A)) then begin
-         //we get the room which is left to ours
-         newRoom := GetRoomByCoordinates(currentRoomLocation.X - 1, currentRoomLocation.Y);
-         //if there isn't a room, we just return
-         if(newRoom = nil) then
-            exit;
-
-         SetTargetRoom(newRoom, Direction.Left);
-         exit;
+       AttemptToWalk(Direction.Left);
+       exit;
     end;
 
     //move up
     if((Key = VK_Up) or (Key = VK_S)) then begin
-         //we get the room which is left to ours
-         newRoom := GetRoomByCoordinates(currentRoomLocation.X, currentRoomLocation.Y + 1);
-         //if there isn't a room, we just return
-         if(newRoom = nil) then
-            exit;
-
-         SetTargetRoom(newRoom, Direction.Top);
-         exit;
+       AttemptToWalk(Direction.Top);
+       exit;
     end;
 
     //move down
     if((Key = VK_Down) or (Key = VK_W)) then begin
-         //we get the room which is left to ours
-         newRoom := GetRoomByCoordinates(currentRoomLocation.X, currentRoomLocation.Y - 1);
-         //if there isn't a room, we just return
-         if(newRoom = nil) then
-            exit;
-
-         SetTargetRoom(newRoom, Direction.Bottom);
-         exit;
+       AttemptToWalk(Direction.Bottom);
+       exit;
     end;
+end;
+
+procedure TGameComposition.AttemptToWalk(targetDirection : Direction);
+var newRoom : IRoom;
+    currentRoomLocation : TPoint;
+    specialExits : TSpecialExitArray;
+    specialExit : ISpecialExit;
+    lockedExit : TLockedExit;
+begin
+   specialExits := _currentRoom.GetExtendedExits();
+   if (specialExits <> nil) then
+      for specialExit in specialExits do begin
+         if((specialExit <> nil) and (specialExit.GetExitPosition() = targetDirection)) then begin
+            if((specialExit as TObject).ClassType = TNoExit) then
+               exit;
+            if((specialExit as TObject).ClassType = TLevelCompletedExit) then begin
+               _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.LevelCompleted, nil);
+               exit;
+            end;
+            if(Supports(specialExit, TLockedExit, lockedExit) and (not lockedExit.GetExitPassed())) then begin
+               if(not _hud.GetInventoryItemWithId(lockedExit.ObjectiveId)) then
+                  exit;
+            end;
+         end;
+      end;
+
+   currentRoomLocation := _currentRoom.GetLocation();
+   case targetDirection of
+     Direction.Top:
+        newRoom := GetRoomByCoordinates(currentRoomLocation.X, currentRoomLocation.Y + 1);
+     Direction.Right:
+        newRoom := GetRoomByCoordinates(currentRoomLocation.X + 1, currentRoomLocation.Y);
+     Direction.Bottom:
+        newRoom := GetRoomByCoordinates(currentRoomLocation.X, currentRoomLocation.Y - 1);
+     Direction.Left:
+        newRoom := GetRoomByCoordinates(currentRoomLocation.X - 1, currentRoomLocation.Y);
+   end;
+
+   //if there isn't a room, we just return
+   if(newRoom = nil) then
+      exit;
+
+   SetTargetRoom(newRoom, targetDirection);
 end;
 
 procedure TGameComposition.SetTargetRoom(newRoom : IRoom; roomDirection : Direction);
