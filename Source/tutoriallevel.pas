@@ -50,6 +50,7 @@ type
         function GetLocation() : TPoint; override;
      private
         var _normalBitmap : TBGRABitmap;
+            _specialExits : array[0..0] of ISpecialExit;
   end;
 
 type
@@ -190,12 +191,18 @@ end;
 
 //Corridor
 constructor TCorridorRoom.Create();
+var lockPickExit : TLockPickExit;
 begin
     _normalBitmap := TBGRABitmap.Create('resources\levels\tutorial\corridorRoom.png', false);
     AddObjective(TObjective.Create('229c7657-a84e-4a27-8345-52f1f2ca04df', TRectangle.Create(210, 514, 37, 92),
                                      'resources\levels\tutorial\injection1.png', 'resources\levels\tutorial\injection1_hover.png', 'resources\items\injection.png'));
     AddObjective(TObjective.Create('229c7657-a84e-4a27-8345-52f1f2ca04df', TRectangle.Create(205, 526, 73, 43),
                                      'resources\levels\tutorial\injection2.png', 'resources\levels\tutorial\injection2_hover.png', 'resources\items\injection.png'));
+
+    lockPickExit := TLockPickExit.Create(Direction.Top); //specialExits[0] := TLockPickExit.Create(Direction.Top, 0, 0);
+    lockPickExit.Bolts := 8;
+    lockPickExit.Tries := 10;
+    _specialExits[0] := lockPickExit;
 end;
 
 procedure TCorridorRoom.EnterRoom();
@@ -203,15 +210,8 @@ begin
 end;
 
 function TCorridorRoom.GetExtendedExits() : TSpecialExitArray;
-var specialExits : array[0..0] of ISpecialExit;
-    lockPickExit : TLockPickExit;
 begin
-   lockPickExit := TLockPickExit.Create(Direction.Top);
-   lockPickExit.Bolts := 8;
-   lockPickExit.Tries := 10;
-   specialExits[0] := lockPickExit;
-   //specialExits[0] := TLockPickExit.Create(Direction.Left, 0, 0);
-   exit(specialExits);
+   exit(_specialExits);
 end;
 
 function TCorridorRoom.Draw() : TBGRABitmap;

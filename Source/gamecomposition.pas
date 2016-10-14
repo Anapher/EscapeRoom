@@ -92,14 +92,32 @@ implementation
 
 constructor TGameComposition.Create();
 begin
-   _requestedSwitchInfo := nil;
+    _requestedSwitchInfo := nil;
     _hud:= THeadUpDisplay.create;
 end;
 
 procedure TGameComposition.Initialize(parameter : TObject);
 var compositionInfo : TGameCompositionInfo;
     startRoom : TPoint;
+    lockPickCompositionInfo : TGameCompositionLockPickInfo;
+    lockPickExit : TLockPickExit;
+    specialExit : ISpecialExit;
 begin
+    if(parameter.ClassType = TGameCompositionLockPickInfo) then begin
+       lockPickCompositionInfo := parameter as TGameCompositionLockPickInfo;
+       if(lockPickCompositionInfo.Succeeded) then begin
+          for specialExit in _currentRoom.GetExtendedExits() do begin
+             if(Supports(specialExit, TLockPickExit, lockPickExit) and (not lockPickExit.GetExitPassed())) then begin
+                lockPickExit.SetExitPassed();
+                break;
+             end;
+          end;
+
+          AttemptToWalk(lockPickCompositionInfo.DoorDirection);
+       end;
+       exit;
+    end;
+
     compositionInfo := parameter as TGameCompositionInfo;
     _currentLevel := compositionInfo.Level;
     _character := compositionInfo.Character;
@@ -473,7 +491,7 @@ begin
                   exit;
             end;
             if(Supports(specialExit, TLockPickExit, lockPickExit) and (not lockPickExit.GetExitPassed())) then begin
-               _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.LockPick, TLockPickInfo.Create(lockPickExit.Tries, lockPickExit.Bolts));
+               _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.LockPick, TLockPickInfo.Create(lockPickExit.Tries, lockPickExit.Bolts, lockPickExit.GetExitPosition()));
                exit;
             end;
          end;
@@ -562,6 +580,7 @@ begin
    end;
 end;
 
+//TGameCompositionInfo
 constructor TGameCompositionInfo.Create(levelVal : ILevel; characterVal : ICharacter);
 begin
    _level := levelVal;

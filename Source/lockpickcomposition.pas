@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LevelDesign, BGRABitmap, BGRABitmapTypes, BGRAGradients, DateUtils, Controls, LevelUtils, GameEffectUtils,
-  LCLType;
+  LCLType, SpecialExits;
 
 const
   BoltWidth = 30;
@@ -23,6 +23,7 @@ type
        _boltCorrectState : array of boolean;
        _lastFailed : boolean;
        _failedTime : TDateTime;
+       _direction : Direction;
     public
        constructor Create();
        function RequireSwitch() : TSwitchInfo;
@@ -38,13 +39,26 @@ type
   end;
 
 type
+  TGameCompositionLockPickInfo = class
+     private
+        _succeeded : boolean;
+        _direction : Direction;
+     public
+        constructor Create(succeeded : boolean; walkDirection : Direction);
+        property Succeeded: boolean read _succeeded;
+        property DoorDirection: Direction read _direction;
+  end;
+
+type
   TLockPickInfo = class
      private
         _tries, _bolts : integer;
+        _direction : Direction;
      public
-        constructor Create(triesVal, boltsVal : integer);
+        constructor Create(triesVal, boltsVal : integer; walkDirection : Direction);
         property Tries: integer read _tries write _tries;
         property Bolts: integer read _bolts write _bolts;
+        property DoorDirection: Direction read _direction write _direction;
   end;
 
 implementation
@@ -176,10 +190,16 @@ begin
        _boltCorrectState[i] := random(2) = 1;
 
    _lastFailed := false;
+   _direction := lockPickInfo.DoorDirection;
 end;
 
 procedure TLockPickComposition.KeyDown(var Key: Word; Shift: TShiftState);
 begin
+   if(Key = VK_Escape) then begin
+       _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Game, TGameCompositionLockPickInfo.Create(false, _direction));
+       exit;
+   end;
+
    if(_lastFailed) then
       exit;
 
@@ -200,14 +220,15 @@ procedure TLockPickComposition.ProcessInput(value : boolean);
 begin
    if(_boltCorrectState[_currentPosition] = value) then begin
       _currentPosition := _currentPosition + 1;
-      if(_currentPosition > _totalBolts) then begin
+      if(_currentPosition = _totalBolts) then begin
          //Succeeded
+         _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Game, TGameCompositionLockPickInfo.Create(true, _direction));
       end;
    end
    else begin
        _triesLeft := _triesLeft - 1;
        if(_triesLeft = 0) then begin
-         //Failed
+         _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Game, TGameCompositionLockPickInfo.Create(false, _direction));
        end;
        _failedTime := Now;
        _lastFailed := true;
@@ -224,10 +245,19 @@ begin
 
 end;
 
-constructor TLockPickInfo.Create(triesVal, boltsVal : integer);
+//TGameCompositionLockPickInfo
+constructor TGameCompositionLockPickInfo.Create(succeeded : boolean; walkDirection : Direction);
+begin
+   _succeeded := succeeded;
+   _direction := walkDirection;
+end;
+
+//TLockPickInfo
+constructor TLockPickInfo.Create(triesVal, boltsVal : integer; walkDirection : Direction);
 begin
    _tries := triesVal;
    _bolts := boltsVal;
+   _direction := walkDirection;
 end;
 
 end.
