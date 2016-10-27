@@ -191,6 +191,7 @@ begin
 
    _lastFailed := false;
    _direction := lockPickInfo.DoorDirection;
+   _currentPosition := 0;
 end;
 
 procedure TLockPickComposition.KeyDown(var Key: Word; Shift: TShiftState);

@@ -75,13 +75,13 @@ implementation
 constructor TTutorialLevel.Create();
 begin
     _storyboard := TStoryboard.Create();
-    //_storyboard.AddAnimation(TTextFadeAnimation.Create('Willkommen zu Escape Room', BGRA(255, 255, 255, 200), 2000, 500, 2000));
-    //_storyboard.AddAnimation(TTextFadeAnimation.Create('Dies ist das Tutorial Level, in welchem Sie die Spielweise erlernen sollen', BGRA(255, 255, 255, 200), 5000, 500, 2000));
-    //_storyboard.AddAnimation(TTextFadeAnimation.Create('Sie befinden sich in einem mysteriösen Haus, aus welchem Sie entkommen wollen', BGRA(255, 255, 255, 200), 8000, 500, 2000));
-    //_storyboard.AddAnimation(TTextFadeAnimation.Create('Finden Sie den Schlüssel, um die Tür zu öffnen, aber passen Sie auf!', BGRA(255, 255, 255, 200), 11000, 500, 2000));
-    //_storyboard.AddAnimation(TTextFadeAnimation.Create('Laut unbestätigten Berichten sind Sie nicht alleine.', BGRA(255, 255, 255, 200), 14000, 500, 2000));
-    //_storyboard.AddAnimation(TTextFadeAnimation.Create('Kommen Sie hierher zurück, sollten Sie irgendetwas bemerken.', BGRA(255, 255, 255, 200), 17000, 500, 2000));
-    //_storyboard.AddAnimation(TTextFadeAnimation.Create('Sie können sich jetzt mit den Pfeiltasten bewegen. Viel Glück!', BGRA(255, 255, 255, 200), 20000, 500, 3500));
+    _storyboard.AddAnimation(TTextFadeAnimation.Create('Willkommen zu Escape Room', BGRA(255, 255, 255, 200), 2000, 500, 2000));
+    _storyboard.AddAnimation(TTextFadeAnimation.Create('Dies ist das Tutorial Level, in welchem Sie die Spielweise erlernen sollen', BGRA(255, 255, 255, 200), 5000, 500, 2000));
+    _storyboard.AddAnimation(TTextFadeAnimation.Create('Sie befinden sich in einem mysteriösen Haus, aus welchem Sie entkommen wollen', BGRA(255, 255, 255, 200), 8000, 500, 2000));
+    _storyboard.AddAnimation(TTextFadeAnimation.Create('Finden Sie den Schlüssel, um die Tür zu öffnen, aber passen Sie auf!', BGRA(255, 255, 255, 200), 11000, 500, 2000));
+    _storyboard.AddAnimation(TTextFadeAnimation.Create('Laut unbestätigten Berichten sind Sie nicht alleine.', BGRA(255, 255, 255, 200), 14000, 500, 2000));
+    _storyboard.AddAnimation(TTextFadeAnimation.Create('Kommen Sie hierher zurück, sollten Sie irgendetwas bemerken.', BGRA(255, 255, 255, 200), 17000, 500, 2000));
+    _storyboard.AddAnimation(TTextFadeAnimation.Create('Sie können sich jetzt mit den Pfeiltasten bewegen. Viel Glück!', BGRA(255, 255, 255, 200), 20000, 500, 3500));
     _isControlLocked := true;
 
     _currentRoom := nil;
@@ -120,7 +120,7 @@ begin
         end;
     end;
 
-    //if(deltaTime > 23500) then
+    if(deltaTime > 23500) then
        _isControlLocked := false;
 end;
 

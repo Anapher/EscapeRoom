@@ -5,11 +5,13 @@ unit  HeadUpDisplay;
 interface
 
 uses
-  Classes, SysUtils, math, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelUtils, LevelDesign;
+  Classes, SysUtils, math, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelUtils, LevelDesign, FGL;
 
 type
   {$PACKENUM 1}
   CurrentHeadUpDisplayStatus = (Normal, MonsterIsChasing);
+
+TObjectiveList = specialize TFPGObjectList<TObjective>;
 
 type
   THeadUpDisplay= class
@@ -21,7 +23,9 @@ type
         _secureRoomLocation : TPoint;
         _LocationCurrentRoom: IRoom;
         _visitedRooms: Array of boolean;
+        _inventoryItems : TObjectiveList;
     public
+       constructor Create();
        procedure Render(bitmap : TBGRABitmap; deltaTime : Int64);
        procedure InitializeRooms(rooms : TRoomArray);
        procedure CurrentRoomChanged(currentRoom : IRoom);
@@ -35,6 +39,11 @@ type
 
 implementation
 
+constructor THeadUpDisplay.Create();
+begin
+   _inventoryItems := TObjectiveList.Create(true);
+end;
+
 procedure THeadUpDisplay.Render(bitmap : TBGRABitmap; deltaTime : Int64);
 var
   i, maxX, minX, maxY, minY: integer;
@@ -43,8 +52,11 @@ var
   numberRoomsX, numberRoomsY: integer;
   sortedRoomsX, sortedRoomsY : TRoomArray;
   newX, newY: integer;
-
+  inventoryPlaceSize, inventoryStartX : integer;
+  objectiveToDraw : TObjective;
 begin
+
+if _CurrentStatus <> CurrentHeadUpDisplayStatus.MonsterIsChasing then begin
    minX:= _rooms[0].GetLocation.x;
    minY:= _rooms[0].GetLocation.y;
    maxX:= _rooms[0].GetLocation.x;
@@ -82,49 +94,54 @@ begin
   roomWidth:= round(mapLocation.width / numberRoomsX);
   roomHeight:= round(mapLocation.height / numberRoomsY);
 
-
   for i:= 0 to length(_rooms)-1 do begin
-
-
      if _visitedRooms[i]=true then begin
 
            newX:= maplocation.x+(_rooms[i].GetLocation.x-minX) * roomWidth;
            newY:= mapLocation.y-roomHeight+(mapLocation.Height - (_rooms[i].Getlocation.y-minY) * roomHeight);
 
-           if _CurrentStatus <> CurrentHeadUpDisplayStatus.MonsterIsChasing then begin
-
+           //Current Room
            if ((_rooms[i].GetLocation().X = _LocationCurrentRoom.GetLocation().X) and (_rooms[i].GetLocation().Y = _LocationCurrentRoom.GetLocation.Y)) then begin
-              bitmap.FillRect(newX,newY, newX+roomWidth,newY+roomHeight,BGRA(0,0,200,255),
-                TDrawMode.dmSet);
+              bitmap.FillRect(newX,newY, newX+roomWidth,newY+roomHeight,BGRA(52, 152, 219,100),
+                TDrawMode.dmDrawWithTransparency);
            end
+           //Secure Room
            else if((_rooms[i].GetLocation().X = SecureRoomLocation.X) and (_rooms[i].GetLocation().Y = SecureRoomLocation.Y)) then begin
-              bitmap.FillRect(newX,newY,newX+roomWidth,newY+roomHeight,BGRA(0,200,0,255),
-                TDrawMode.dmSet);
+              bitmap.FillRect(newX,newY,newX+roomWidth,newY+roomHeight,BGRA(46, 204, 113,100),
+                TDrawMode.dmDrawWithTransparency);
            end
+           //Normal Room
            else begin
-              bitmap.FillRect(newX,newY,newX+roomWidth,newY+roomHeight,BGRA(100,0,0,255),
-                TDrawMode.dmSet);
+              bitmap.FillRect(newX,newY,newX+roomWidth,newY+roomHeight,BGRA(149, 165, 166,100),
+                TDrawMode.dmDrawWithTransparency);
            end;
 
             bitmap.Rectangle(newX,newY,newX+roomWidth,newY+roomHeight,BGRA(125,125,125,255),
                 TDrawMode.dmSet);
      end;
-
-     end;
-
   end;
 
-
-
-
+  inventoryPlaceSize := round(bitmap.Height / 14);
+  inventoryStartX := bitmap.Width - (inventoryPlaceSize * 4 + 3 * 10 + 20);
+  bitmap.FontHeight := 10;
+  bitmap.TextOut(inventoryStartX, bitmap.Height - 20 - inventoryPlaceSize - 20, 'Inventory', BGRA(255, 255, 255, 200));
+  for i := 0 to 3 do begin //draw 4 inventory places
+      bitmap.FillRect(inventoryStartX + i * 10 + i * inventoryPlaceSize, bitmap.Height - 20 - inventoryPlaceSize,
+                      inventoryStartX + i * 10 + i * inventoryPlaceSize + inventoryPlaceSize, bitmap.Height - 20,
+                      BGRA(155, 89, 182, 100), TDrawMode.dmDrawWithTransparency);
+      if(_inventoryItems.Count > i) then begin
+         objectiveToDraw := _inventoryItems[i];
+         bitmap.StretchPutImage(RectWithSize(inventoryStartX + i * 10 + i * inventoryPlaceSize + 4, bitmap.Height - 20 - inventoryPlaceSize + 4,
+                                inventoryPlaceSize - 8, inventoryPlaceSize - 8), objectiveToDraw.ItemImage, TDrawMode.dmDrawWithTransparency);
+      end;
+  end;
+ end;
 end;
 
 procedure THeadUpDisplay.InitializeRooms(rooms : TRoomArray);
 begin
    _rooms:= rooms;
    setlength(_visitedRooms, length(_rooms));
-
-
   end;
 
 procedure THeadUpDisplay.CurrentRoomChanged(currentRoom : IRoom);
@@ -136,18 +153,25 @@ begin
      for i:=0 to length(_rooms)-1 do begin
               if (_rooms[i] = currentRoom) then
                  _visitedRooms[i]:= true;
-
      end;
 end;
 
 procedure THeadUpDisplay.ItemPickedUp(item : TObjective);
 begin
-
+   _inventoryItems.Add(item);
 end;
 
 function THeadUpDisplay.GetInventoryItemWithId(id : string) : boolean;
+var objective : TObjective;
 begin
-   //TODO: Check if the item exits in the current inventory, if yes, remove it and return true, else return false
+   //Check if the item exits in the current inventory, if yes, remove it and return true, else return false
+   for objective in _inventoryItems do begin
+      if(objective.ObjectiveId = id) then begin
+         _inventoryItems.Remove(objective);
+         exit(true);
+      end;
+   end;
+
    exit(false);
 end;
 end.

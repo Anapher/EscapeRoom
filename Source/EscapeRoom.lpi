@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="17">
+    <Units Count="18">
       <Unit0>
         <Filename Value="EscapeRoom.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -121,6 +121,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="LockPickComposition"/>
       </Unit16>
+      <Unit17>
+        <Filename Value="levelcompletedcomposition.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="LevelCompletedComposition"/>
+      </Unit17>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

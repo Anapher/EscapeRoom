@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, ExtCtrls, LevelDesign, MenuComposition, GameComposition,
   IntroComposition, Controls, Forms, Graphics, BGRABitmap, BGRABitmapTypes,
-  BGRAGradients, DateUtils, DeadComposition, LockPickComposition;
+  BGRAGradients, DateUtils, DeadComposition, LockPickComposition, LevelCompletedComposition;
 
 const
   FramesPerSecond = 25;
@@ -94,6 +94,8 @@ begin
            newComposition := TDeadComposition.Create();
          CompositionType.LockPick:
            newComposition := TLockPickComposition.Create();
+         CompositionType.LevelCompleted:
+           newComposition := TLevelCompletedComposition.Create();
      end;
 
      //search free space

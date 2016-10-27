@@ -255,12 +255,13 @@ begin
     _location := locationVal;
     _normalImagePath := normalImagePath;
     _hoveredImagePath := hoveredImagePath;
+    _itemImagePath := itemImagePath;
 end;
 
 function TObjective.GetItemImage() : TBGRABitmap;
 begin
    if(_cachedItemImage = nil) then
-      _cachedItemImage := TBGRABitmap.Create(_cachedItemImage);
+      _cachedItemImage := TBGRABitmap.Create(_itemImagePath);
 
    exit(_cachedItemImage);
 end;

@@ -1,4 +1,4 @@
-unit DeadComposition;
+unit LevelCompletedComposition;
 
 {$mode objfpc}{$H+}
 
@@ -9,7 +9,7 @@ uses
   Controls, GameEffectUtils, Storyboard, LCLType;
 
 type
-  TDeadComposition = class(IComposition)
+  TLevelCompletedComposition = class(IComposition)
     private
        _requestedSwitchInfo : TSwitchInfo;
     public
@@ -23,52 +23,52 @@ type
        procedure MouseMove(Shift: TShiftState; X, Y: Integer);
        procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   end;
-
 implementation
 
-constructor TDeadComposition.Create();
+constructor TLevelCompletedComposition.Create();
 begin
     _requestedSwitchInfo := nil;
 end;
 
-procedure TDeadComposition.Initialize(parameter : TObject);
+procedure TLevelCompletedComposition.Initialize(parameter : TObject);
 begin
 
 end;
 
-function TDeadComposition.RequireSwitch() : TSwitchInfo;
+function TLevelCompletedComposition.RequireSwitch() : TSwitchInfo;
 begin
     result := _requestedSwitchInfo;
     _requestedSwitchInfo := nil;
 end;
 
-function TDeadComposition.GetCompositionType() : CompositionType;
+function TLevelCompletedComposition.GetCompositionType() : CompositionType;
 begin
-    exit(CompositionType.Dead);
+    exit(CompositionType.LevelCompleted);
 end;
 
-procedure TDeadComposition.Render(bitmap : TBGRABitmap; deltaTime : Int64);
+procedure TLevelCompletedComposition.Render(bitmap : TBGRABitmap; deltaTime : Int64);
 begin
     bitmap.FontAntialias := true;
-    bitmap.FontHeight := Round(bitmap.Height / 5);
-    DrawCenteredText('Tot', bitmap, BGRA(231, 76, 60, 170));
+    bitmap.FontHeight := Round(bitmap.Height / 10);
+    DrawCenteredText('Level erfolgreich abgeschlossen!', bitmap, BGRA(39, 174, 96, 170));
 
     if(deltaTime > 5000) then
        _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Menu, nil);
 end;
 
-procedure TDeadComposition.KeyDown(var Key: Word; Shift: TShiftState);
+procedure TLevelCompletedComposition.KeyDown(var Key: Word; Shift: TShiftState);
 begin
    if((Key = VK_Space) or (Key = VK_Return)) then
       _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Menu, nil);
 end;
 
-procedure TDeadComposition.MouseMove(Shift: TShiftState; X, Y: Integer);
+procedure TLevelCompletedComposition.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
 end;
 
-procedure TDeadComposition.MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TLevelCompletedComposition.MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
 end;
+
 end.
 
