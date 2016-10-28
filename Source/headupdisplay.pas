@@ -125,7 +125,7 @@ if _CurrentStatus <> CurrentHeadUpDisplayStatus.MonsterIsChasing then begin
   inventoryPlaceSize := round(bitmap.Height / 14);
   inventoryStartX := bitmap.Width - (inventoryPlaceSize * 4 + 3 * 10 + 20);
   bitmap.FontHeight := 10;
-  bitmap.TextOut(inventoryStartX, bitmap.Height - 20 - inventoryPlaceSize - 20, 'Inventory', BGRA(255, 255, 255, 200));
+  bitmap.TextOut(inventoryStartX, bitmap.Height - 20 - inventoryPlaceSize - 20, 'Inventar', BGRA(255, 255, 255, 200));
   for i := 0 to 3 do begin //draw 4 inventory places
       bitmap.FillRect(inventoryStartX + i * 10 + i * inventoryPlaceSize, bitmap.Height - 20 - inventoryPlaceSize,
                       inventoryStartX + i * 10 + i * inventoryPlaceSize + inventoryPlaceSize, bitmap.Height - 20,

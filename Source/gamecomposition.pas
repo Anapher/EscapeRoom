@@ -107,7 +107,7 @@ begin
        lockPickCompositionInfo := parameter as TGameCompositionLockPickInfo;
        if(lockPickCompositionInfo.Succeeded) then begin
           for specialExit in _currentRoom.GetExtendedExits() do begin
-             if(Supports(specialExit, TLockPickExit, lockPickExit) and (not lockPickExit.GetExitPassed())) then begin
+             if(Supports(specialExit, TLockPickExit, lockPickExit) and (lockPickExit.GetExitPosition() = lockPickCompositionInfo.DoorDirection) and (not lockPickExit.GetExitPassed())) then begin
                 lockPickExit.SetExitPassed();
                 break;
              end;
