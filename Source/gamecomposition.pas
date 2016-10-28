@@ -294,8 +294,11 @@ begin
                   _currentCharacterMode := CharacterMode.RunAway;
                   _monsterRunningWithoutActions := Now;
               end
-              else if (_currentCharacterMode = CharacterMode.Scared) then
-                  DrawCenteredText('RENN ZUM STARTPUNKT !!!', bitmap, BGRA(255,255,255, 170 - round(deltaCharacterMovement / ((CharacterMoveInTime + CharacterMoveOutTime + 500)) * 170)));
+              else if (_currentCharacterMode = CharacterMode.Scared) then begin
+                  _hud.CurrentStatus := CurrentHeadUpDisplayStatus.MonsterIsChasing;
+                  _hud.MonsterTimeLeft := 0;
+                  //DrawCenteredText('RENN ZUM STARTPUNKT !!!', bitmap, BGRA(255,255,255, 170 - round(deltaCharacterMovement / ((CharacterMoveInTime + CharacterMoveOutTime + 500)) * 170)));
+              end;
               deltaCharacterMovement := round(CharacterMoveInTime / 2) + CharacterMoveOutTime; //we stop at half
          end;
          characterLocation := ComputeCharacterPositionLinear(GetDoorLocation(GetOppositeDirection(_targetedLocation), roomBitmapLocation), centeredLocation, deltaCharacterMovement - CharacterMoveOutTime, CharacterMoveInTime);

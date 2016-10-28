@@ -153,19 +153,25 @@ type
 
 type
   TStandardRoom = class(TInterfacedObject, IRoom, ICustomDrawingRoom)
+     private
+        _location : TPoint;
+        _roomImage : TBGRABitmap;
+        _extendedExits : TSpecialExitArray;
      public
         constructor Create(location : TPoint; roomImagePath : string); virtual;
         procedure EnterRoom(); virtual;
         function GetExtendedExits() : TSpecialExitArray; virtual;
         function GetLocation() : TPoint; virtual;
         function Draw() : TBGRABitmap; virtual;
-     private
-        _location : TPoint;
-        _roomImage : TBGRABitmap;
+        property ExtendedExits: TSpecialExitArray read _extendedExits write _extendedExits;
   end;
 
 type
   TStandardMonsterRoom = class(TInterfacedObject, ICustomDrawingRoom, IRoom, IMonsterRoom)
+     private
+     var _normalBitmap, _monsterBitmap : TBGRABitmap;
+         _location : TPoint;
+         _extendedExits : TSpecialExitArray;
      public
         constructor Create(location : TPoint; roomImagePath, roomWithMonsterImagePath : string);
         procedure EnterRoom();
@@ -174,9 +180,7 @@ type
         function Draw() : TBGRABitmap;
         function DrawWithMonster() : TBGRABitmap;
         function ContainsMonster() : boolean;
-     private
-        var _normalBitmap, _monsterBitmap : TBGRABitmap;
-            _location : TPoint;
+        property ExtendedExits: TSpecialExitArray read _extendedExits write _extendedExits;
   end;
 
 implementation
@@ -195,7 +199,7 @@ end;
 
 function TStandardMonsterRoom.GetExtendedExits() : TSpecialExitArray;
 begin
-   exit(nil);
+   exit(_extendedExits);
 end;
 
 function TStandardMonsterRoom.GetLocation() : TPoint;
@@ -230,7 +234,7 @@ end;
 
 function TStandardRoom.GetExtendedExits() : TSpecialExitArray;
 begin
-   exit(nil);
+   exit(_extendedExits);
 end;
 
 function TStandardRoom.GetLocation() : TPoint;

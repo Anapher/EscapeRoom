@@ -5,7 +5,7 @@ unit  HeadUpDisplay;
 interface
 
 uses
-  Classes, SysUtils, math, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelUtils, LevelDesign, FGL;
+  Classes, SysUtils, math, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelUtils, LevelDesign, FGL, GameEffectUtils;
 
 type
   {$PACKENUM 1}
@@ -54,6 +54,7 @@ var
   newX, newY: integer;
   inventoryPlaceSize, inventoryStartX : integer;
   objectiveToDraw : TObjective;
+  textLocation : TRectangle;
 begin
 
 if _CurrentStatus <> CurrentHeadUpDisplayStatus.MonsterIsChasing then begin
@@ -135,9 +136,20 @@ if _CurrentStatus <> CurrentHeadUpDisplayStatus.MonsterIsChasing then begin
                                 inventoryPlaceSize - 8, inventoryPlaceSize - 8), objectiveToDraw.ItemImage, TDrawMode.dmDrawWithTransparency);
       end;
   end;
- end;
-end;
+ end
+else begin
+    bitmap.Rectangle(round(bitmap.Width / 3), bitmap.Height - 60, round(bitmap.Width / 3 * 2), bitmap.Height - 40, BGRA(231, 76, 60), TDrawMode.dmSet);
+    bitmap.FontHeight := 20;
+    textLocation := GetTextCenterPoint('RENN ZUM STARTPUNKT !!!', bitmap);
+    bitmap.TextOut(textLocation.X, bitmap.Height - 90, 'RENN ZUM STARTPUNKT !!!', BGRA(255,255,255));
+    if(MonsterTimeLeft < 1000) then begin
+      bitmap.FillRect(round(bitmap.Width / 3), bitmap.Height - 60, round(bitmap.Width / 3 + (bitmap.Width / 3) * MonsterTimeLeft / 1000), bitmap.Height - 40, BGRA(231, 76, 60, 180), TDrawMode.dmDrawWithTransparency);
+    end;
 
+    bitmap.FillRect(0, 0, bitmap.Width, bitmap.Height, BGRA(231, 76, 60, round(10 * (MonsterTimeLeft / 1000))),
+                    TDrawMode.dmDrawWithTransparency);
+end;
+end;
 procedure THeadUpDisplay.InitializeRooms(rooms : TRoomArray);
 begin
    _rooms:= rooms;

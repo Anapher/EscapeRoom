@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, BGRABitmap, BGRABitmapTypes, BGRAGradients, LevelDesign,
   Controls, DrawableUiElements, Types, Forms, LCLType, TutorialLevel, GameComposition,
-  CharacterSoldier;
+  CharacterSoldier, PrisonLevel;
 
 const
   MenuButtonRelWidth = 0.4; //rel = relative
@@ -43,7 +43,7 @@ begin
     SetLength(_buttons, 3);
 
     _buttons[0] := TDrawableButton.Create('Tutorial starten', 0);
-    _buttons[1] := TDrawableButton.Create('Level wählen', 1);
+    _buttons[1] := TDrawableButton.Create('Level "Gefängis" starten', 1);
     _buttons[2] := TDrawableButton.Create('Beenden', 2);
 end;
 
@@ -197,7 +197,7 @@ procedure TMenuComposition.DoButtonAction(button : TDrawableButton);
 begin
    Case button.Id of
       0: _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Game, TGameCompositionInfo.Create(TTutorialLevel.Create(), TCharacterSoldier.Create()));
-      1: ;
+      1: _requestedSwitchInfo := TSwitchInfo.Create(CompositionType.Game, TGameCompositionInfo.Create(TPrisonLevel.Create(), TCharacterSoldier.Create()));
       2: Application.Terminate;
    end;
 end;
