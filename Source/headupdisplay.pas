@@ -153,7 +153,10 @@ end;
 procedure THeadUpDisplay.InitializeRooms(rooms : TRoomArray);
 begin
    _rooms:= rooms;
-   setlength(_visitedRooms, length(_rooms));
+   SetLength(_visitedRooms, 0); //reset
+   _LocationCurrentRoom := nil;
+   _inventoryItems.Clear();
+   Setlength(_visitedRooms, length(_rooms));
   end;
 
 procedure THeadUpDisplay.CurrentRoomChanged(currentRoom : IRoom);
